@@ -25,5 +25,5 @@ lazy val `flutterby` =
     .aggregate(`flutterby-core`)
 
 lazy val `flutterby-core` = project
-  .in(file("core"))
+  .in(file("modules/core"))
   .settings(commonSettings: _*)
