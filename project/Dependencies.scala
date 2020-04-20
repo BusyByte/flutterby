@@ -3,8 +3,7 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val cats       = "2.0.0"
-    val catsEffect = "2.0.0"
+    val catsEffect_1_x = "1.4.0"
 
     // Test
     val specs2 = "4.9.3"
@@ -17,8 +16,7 @@ object Dependencies {
 
   object Libraries {
     lazy val flyway = "org.flywaydb"                % "flyway-core"                   % Versions.flyway
-    lazy val cats       = "org.typelevel" %% "cats-core"   % Versions.cats
-    lazy val catsEffect = "org.typelevel" %% "cats-effect" % Versions.catsEffect
+    lazy val catsEffect_1_x = "org.typelevel" %% "cats-effect" % Versions.catsEffect_1_x
 
     // Test
     lazy val specs2 = "org.specs2" %% "specs2-core" % Versions.specs2
