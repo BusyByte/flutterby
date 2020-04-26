@@ -5,7 +5,8 @@ import java.time.Instant
 import org.flywaydb.core.api.{
   MigrationState => FlywayMigrationState,
   MigrationType => FlywayMigrationType,
-  MigrationVersion => FlywayMigrationVersion
+  MigrationVersion => FlywayMigrationVersion,
+  MigrationInfo => FlywayMigrationInfo
 }
 
 import scala.concurrent.duration.FiniteDuration
@@ -22,7 +23,7 @@ trait Flutterby[F[_]] {
 
 trait MigrationInfoService[F[_]] {
   def all(): F[Vector[MigrationInfo]]
-  def current(): F[MigrationInfo]
+  def current(): F[Option[MigrationInfo]]
   def pending(): F[Vector[MigrationInfo]]
   def applied(): F[Vector[MigrationInfo]]
 }
@@ -252,8 +253,9 @@ object MigrationVersion {
     val displayText: DisplayText = DisplayText("<< Latest Version >>")
   }
   case object CURRENT extends MigrationVersion { //TODO these need specs to make sure
-    val version: Option[Version] = Some(Version("<< Current Version >>"))
-    val displayText: DisplayText = DisplayText("<< Current Version >>")
+    val currentVersionDisplayText = "<< Current Version >>"
+    val version: Option[Version]  = Some(Version(currentVersionDisplayText))
+    val displayText: DisplayText  = DisplayText(currentVersionDisplayText)
   }
 
   final case class NormalMigrationVersion(displayText: DisplayText) extends MigrationVersion {
@@ -266,35 +268,43 @@ object MigrationVersion {
     case FlywayMigrationVersion.CURRENT => CURRENT
     case other                          => NormalMigrationVersion(DisplayText(other.toString))
   }
+
+  def toFlyway(m: MigrationVersion): FlywayMigrationVersion = m match {
+    case EMPTY                                        => FlywayMigrationVersion.EMPTY
+    case LATEST                                       => FlywayMigrationVersion.LATEST
+    case CURRENT                                      => FlywayMigrationVersion.CURRENT
+    case NormalMigrationVersion(DisplayText(version)) => FlywayMigrationVersion.fromVersion(version)
+  }
+
+  implicit class MigrationVersionOps(val m: MigrationVersion) extends AnyVal {
+    def toFlyway: FlywayMigrationVersion = MigrationVersion.toFlyway(m)
+  }
 }
 
-sealed trait MigrationInfo {
-  def `type`: MigrationType
-  def checksum: Checksum
-  def version: MigrationVersion
-  def description: Description
-  def script: Script
-  def state: MigrationState
-}
-
-final case class AppliedMigrationInfo(
+final case class MigrationInfo(
     `type`: MigrationType,
     checksum: Checksum,
     version: MigrationVersion,
     description: Description,
     script: Script,
     state: MigrationState,
-    installedOn: InstalledOn,
-    installedBy: InstalledBy,
-    installedRank: InstalledRank,
-    executionTime: ExecutionTime
-) extends MigrationInfo
-
-final case class UnAppliedMigrationInfo(
-    `type`: MigrationType,
-    checksum: Checksum,
-    version: MigrationVersion,
-    description: Description,
-    script: Script,
-    state: MigrationState
-) extends MigrationInfo
+    installedOn: Option[InstalledOn],
+    installedBy: Option[InstalledBy],
+    installedRank: Option[InstalledRank],
+    executionTime: Option[ExecutionTime]
+)
+object MigrationInfo {
+  import scala.concurrent.duration._
+  def fromFlyway(m: FlywayMigrationInfo): MigrationInfo = MigrationInfo(
+    `type` = MigrationType.fromFlyway(m.getType),
+    checksum = Checksum(m.getChecksum),
+    version = MigrationVersion.fromFlyway(m.getVersion),
+    description = Description(m.getDescription),
+    script = Script(m.getScript),
+    state = MigrationState.fromFlyway(m.getState),
+    installedOn = Option(m.getInstalledOn).map(d => InstalledOn(d.toInstant)),
+    installedBy = Option(m.getInstalledBy).map(InstalledBy.apply),
+    installedRank = Option(m.getInstalledRank).map(r => InstalledRank(r.intValue())),
+    executionTime = Option(m.getExecutionTime).map(e => ExecutionTime(e.intValue().millis))
+  )
+}
