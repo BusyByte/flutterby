@@ -15,6 +15,7 @@ trait Flutterby[F[_]] {
   def migrate: F[Int]
   def info: F[MigrationInfoService[F]]
   def validate(): F[Unit]
+  def undo(): F[Int]
   def repair(): F[Unit]
   def clean(): F[Unit]
 }

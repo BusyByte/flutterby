@@ -9,6 +9,7 @@ object FlutterbyCats {
     override def migrate: F[Int]                  = ???
     override def info: F[MigrationInfoService[F]] = ???
     override def validate(): F[Unit]              = ???
+    override def undo(): F[Int]                   = ???
     override def repair(): F[Unit]                = ???
     override def clean(): F[Unit]                 = ???
   }
