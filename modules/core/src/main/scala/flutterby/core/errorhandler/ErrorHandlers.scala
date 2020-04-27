@@ -6,6 +6,12 @@ package object errorhandler {
 
 package errorhandler {
 
+  object ErrorHandler {
+    import org.flywaydb.core.api.errorhandler.{ ErrorHandler => FlywayErrorHandler, Context => FlywayContext }
+    def toFlyway(e: ErrorHandler): FlywayErrorHandler =
+      (context: FlywayContext) => e(Context.fromFlyway(context)).isHandled
+  }
+
   import flutterby.core.jdk.CollectionConversions
 
   sealed trait `IsHandled?`
