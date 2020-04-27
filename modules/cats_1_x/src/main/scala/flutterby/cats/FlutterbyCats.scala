@@ -19,7 +19,7 @@ object FlutterbyCats {
     override def clean(): F[Unit]                 = F.delay(flyway.clean())
   }
 
-  def fromDefault[F[_]: Sync]: Flutterby[F] = fromConfig(FlutterbyConfig.default)
+  def fromDefault[F[_]: Sync]: Flutterby[F] = fromConfig(FlutterbyConfig.defaultConfig)
 }
 
 object MigrationInfoServiceCats {
