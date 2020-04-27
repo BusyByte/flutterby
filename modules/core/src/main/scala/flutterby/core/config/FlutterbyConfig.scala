@@ -5,12 +5,12 @@ import java.nio.charset.{ Charset, StandardCharsets }
 import java.util
 
 import flutterby.core.jdk.CollectionConversions
-import flutterby.core.MigrationVersion
+import flutterby.core.{ errorhandler, MigrationVersion }
+import flutterby.core.errorhandler.{ Context, ErrorHandlers }
 import javax.sql.DataSource
 import org.flywaydb.core.api
 import org.flywaydb.core.api.callback.FlywayCallback
 import org.flywaydb.core.api.configuration.FlywayConfiguration
-import org.flywaydb.core.api.errorhandler.ErrorHandler
 import org.flywaydb.core.api.resolver.MigrationResolver
 
 final case class BaselineVersion(version: MigrationVersion)
@@ -229,8 +229,6 @@ object `GroupTransactions?` {
 
 final case class InstalledBy(value: String) extends AnyVal
 
-final case class ErrorHandlers(errorHandlers: Vector[ErrorHandler])
-
 final case class DryRunOutput(out: OutputStream)
 
 final case class FlutterbyConfig(
@@ -368,23 +366,29 @@ object FlutterbyConfig {
     override def getPlaceholderPrefix: String      = c.placeholderPrefix.value
     override def getPlaceholders: util.Map[String, String] =
       CollectionConversions.toJavaMap(c.placeholders.placeholders)
-    override def getTarget: api.MigrationVersion       = c.baselineVersion.version.toFlyway
-    override def getTable: String                      = c.table.value
-    override def getSchemas: Array[String]             = c.schemas.schemas.toArray
-    override def getEncoding: String                   = c.encoding.value.name
-    override def getLocations: Array[String]           = c.locations.locations.map(_.value).toArray
-    override def isBaselineOnMigrate: Boolean          = c.baselineOnMigrate.isBaselineOnMigrate
-    override def isOutOfOrder: Boolean                 = `AllowOutOfOrder?`.isOutOfOrder(c.outOfOrder)
-    override def isIgnoreMissingMigrations: Boolean    = c.ignoreMissingMigrations.isIgnoreMissingMigrations
-    override def isIgnoreFutureMigrations: Boolean     = c.ignoreFutureMigrations.isIgnoreFutureMigrations
-    override def isValidateOnMigrate: Boolean          = c.validateOnMigrate.isValidateOnMigrate
-    override def isCleanOnValidationError: Boolean     = c.cleanOnValidationError.isCleanOnValidationError
-    override def isCleanDisabled: Boolean              = c.clean.isCleanDisabled
-    override def isMixed: Boolean                      = c.mixed.isMixed
-    override def isGroup: Boolean                      = c.group.isGroup
-    override def getInstalledBy: String                = c.installedBy.map(_.value).orNull
-    override def getErrorHandlers: Array[ErrorHandler] = c.errorHandlers.errorHandlers.toArray
-    override def getDryRunOutput: OutputStream         = c.dryRunOutput.map(_.out).orNull
+    override def getTarget: api.MigrationVersion    = c.baselineVersion.version.toFlyway
+    override def getTable: String                   = c.table.value
+    override def getSchemas: Array[String]          = c.schemas.schemas.toArray
+    override def getEncoding: String                = c.encoding.value.name
+    override def getLocations: Array[String]        = c.locations.locations.map(_.value).toArray
+    override def isBaselineOnMigrate: Boolean       = c.baselineOnMigrate.isBaselineOnMigrate
+    override def isOutOfOrder: Boolean              = `AllowOutOfOrder?`.isOutOfOrder(c.outOfOrder)
+    override def isIgnoreMissingMigrations: Boolean = c.ignoreMissingMigrations.isIgnoreMissingMigrations
+    override def isIgnoreFutureMigrations: Boolean  = c.ignoreFutureMigrations.isIgnoreFutureMigrations
+    override def isValidateOnMigrate: Boolean       = c.validateOnMigrate.isValidateOnMigrate
+    override def isCleanOnValidationError: Boolean  = c.cleanOnValidationError.isCleanOnValidationError
+    override def isCleanDisabled: Boolean           = c.clean.isCleanDisabled
+    override def isMixed: Boolean                   = c.mixed.isMixed
+    override def isGroup: Boolean                   = c.group.isGroup
+    override def getInstalledBy: String             = c.installedBy.map(_.value).orNull
+    override def getErrorHandlers: Array[api.errorhandler.ErrorHandler] =
+      c.errorHandlers.errorHandlers.map { outer: errorhandler.ErrorHandler =>
+        new api.errorhandler.ErrorHandler {
+          override def handle(context: api.errorhandler.Context): Boolean =
+            outer(Context.fromFlyway(context)).isHandled
+        }
+      }.toArray
+    override def getDryRunOutput: OutputStream = c.dryRunOutput.map(_.out).orNull
   }
 
   implicit class FlutterbyConfigOps(val c: FlutterbyConfig) extends AnyVal {
