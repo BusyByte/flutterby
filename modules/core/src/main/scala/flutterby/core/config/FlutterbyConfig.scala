@@ -1,11 +1,11 @@
-package dev.busybyte.flutterby.core.config
+package flutterby.core.config
 
 import java.io.OutputStream
 import java.util
 
-import dev.busybyte.flutterby.core.{ DisplayText, MigrationVersion }
-import dev.busybyte.flutterby.core.MigrationVersion.NormalMigrationVersion
-import dev.busybyte.flutterby.core.jdk.CollectionConversions
+import flutterby.core.MigrationVersion.NormalMigrationVersion
+import flutterby.core.jdk.CollectionConversions
+import flutterby.core.{ DisplayText, MigrationVersion }
 import javax.sql.DataSource
 import org.flywaydb.core.api
 import org.flywaydb.core.api.callback.FlywayCallback

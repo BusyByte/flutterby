@@ -1,4 +1,4 @@
-package dev.busybyte.flutterby.core
+package flutterby.core
 
 import java.time.Instant
 

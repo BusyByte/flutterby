@@ -1,8 +1,8 @@
-package dev.busybyte.flutterby.cats
+package flutterby.cats
 
 import cats.effect.Sync
-import dev.busybyte.flutterby.core.config.FlutterbyConfig
-import dev.busybyte.flutterby.core.{ Flutterby, MigrationInfo, MigrationInfoService }
+import flutterby.core.{ Flutterby, MigrationInfo, MigrationInfoService }
+import flutterby.core.config.FlutterbyConfig
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.{ MigrationInfoService => FlywayMigrationInfoService }
 
