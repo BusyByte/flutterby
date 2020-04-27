@@ -345,7 +345,7 @@ object FlutterbyConfig {
     dryRunOutput = Defaults.dryRunOutput
   )
 
-  def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration { //TODO: create ops for these boolean
+  def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration {
 
     override def getClassLoader: ClassLoader              = c.classLoader
     override def getDataSource: DataSource                = c.dataSource.orNull
