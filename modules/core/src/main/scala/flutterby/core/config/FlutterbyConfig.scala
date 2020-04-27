@@ -28,6 +28,10 @@ object `SkipDefaultResolvers?` {
     case SkipDefaultResolvers => true
     case UseDefaultResolvers  => false
   }
+
+  implicit class `SkipDefaultResolvers?Ops`(val s: `SkipDefaultResolvers?`) extends AnyVal {
+    def isSkipDefaultResolvers: Boolean = `SkipDefaultResolvers?`.isSkipDefaultResolvers(s)
+  }
 }
 
 sealed trait `SkipDefaultCallbacks?`
@@ -38,6 +42,10 @@ object `SkipDefaultCallbacks?` {
   def isSkipDefaultCallbacks(s: `SkipDefaultCallbacks?`): Boolean = s match {
     case SkipDefaultCallbacks => true
     case UseDefaultCallbacks  => false
+  }
+
+  implicit class `SkipDefaultCallbacks?Ops`(val s: `SkipDefaultCallbacks?`) extends AnyVal {
+    def isSkipDefaultCallbacks: Boolean = `SkipDefaultCallbacks?`.isSkipDefaultCallbacks(s)
   }
 }
 
@@ -64,6 +72,11 @@ object `ReplacePlaceholders?` {
     case ReplacePlaceholders      => true
     case DoNotReplacePlaceholders => false
   }
+
+  implicit class `ReplacePlaceholders?Ops`(val r: `ReplacePlaceholders?`) extends AnyVal {
+    def isPlaceholderReplacement: Boolean = `ReplacePlaceholders?`.isPlaceholderReplacement(r)
+  }
+
 }
 
 final case class PlaceholderSuffix(value: String) extends AnyVal
@@ -91,6 +104,10 @@ object `BaselineOnMigrate?` {
     case Baseline      => true
     case DoNotBaseline => false
   }
+
+  implicit class `BaselineOnMigrate?Ops`(val b: `BaselineOnMigrate?`) extends AnyVal {
+    def isBaselineOnMigrate: Boolean = `BaselineOnMigrate?`.isBaselineOnMigrate(b)
+  }
 }
 
 sealed trait `AllowOutOfOrder?`
@@ -113,6 +130,10 @@ object `IgnoreMissingMigrations?` {
     case Ignore      => true
     case DoNotIgnore => false
   }
+
+  implicit class `IgnoreMissingMigrations?Ops`(val i: `IgnoreMissingMigrations?`) extends AnyVal {
+    def isIgnoreMissingMigrations: Boolean = `IgnoreMissingMigrations?`.isIgnoreMissingMigrations(i)
+  }
 }
 
 sealed trait `IgnoreFutureMigrations?`
@@ -123,6 +144,10 @@ object `IgnoreFutureMigrations?` {
   def isIgnoreFutureMigrations(i: `IgnoreFutureMigrations?`): Boolean = i match {
     case Ignore      => true
     case DoNotIgnore => false
+  }
+
+  implicit class `IgnoreFutureMigrations?Ops`(val i: `IgnoreFutureMigrations?`) extends AnyVal {
+    def isIgnoreFutureMigrations: Boolean = `IgnoreFutureMigrations?`.isIgnoreFutureMigrations(i)
   }
 }
 
@@ -135,6 +160,10 @@ object `ValidateOnMigrate?` {
     case Validate      => true
     case DoNotValidate => false
   }
+
+  implicit class `ValidateOnMigrate?Ops`(val v: `ValidateOnMigrate?`) extends AnyVal {
+    def isValidateOnMigrate: Boolean = `ValidateOnMigrate?`.isValidateOnMigrate(v)
+  }
 }
 
 sealed trait `CleanOnValidationError?`
@@ -145,6 +174,10 @@ object `CleanOnValidationError?` {
   def isCleanOnValidationError(c: `CleanOnValidationError?`): Boolean = c match {
     case Clean      => true
     case DoNotClean => false
+  }
+
+  implicit class `CleanOnValidationError?Ops`(val c: `CleanOnValidationError?`) extends AnyVal {
+    def isCleanOnValidationError: Boolean = `CleanOnValidationError?`.isCleanOnValidationError(c)
   }
 }
 
@@ -157,6 +190,10 @@ object `CleanAllowed?` {
     case CleanAllowed    => false
     case DoNotAllowClean => true
   }
+
+  implicit class `CleanAllowed?Ops`(val c: `CleanAllowed?`) extends AnyVal {
+    def isCleanDisabled: Boolean = `CleanAllowed?`.isCleanDisabled(c)
+  }
 }
 
 sealed trait `MixedTransactionAllowed?`
@@ -167,6 +204,10 @@ object `MixedTransactionAllowed?` {
   def isMixed(m: `MixedTransactionAllowed?`): Boolean = m match {
     case AllowMixed      => true
     case DoNotAllowMixed => false
+  }
+
+  implicit class `MixedTransactionAllowed?Ops`(val m: `MixedTransactionAllowed?`) extends AnyVal {
+    def isMixed: Boolean = `MixedTransactionAllowed?`.isMixed(m)
   }
 }
 
@@ -179,6 +220,11 @@ object `GroupTransactions?` {
     case Group      => true
     case DoNotGroup => false
   }
+
+  implicit class `GroupTransactions?Ops`(val g: `GroupTransactions?`) extends AnyVal {
+    def isGroup: Boolean = `GroupTransactions?`.isGroup(g)
+  }
+
 }
 
 final case class InstalledBy(value: String) extends AnyVal
@@ -306,42 +352,36 @@ object FlutterbyConfig {
     override def getBaselineVersion: api.MigrationVersion = c.baselineVersion.version.toFlyway
     override def getBaselineDescription: String           = c.baselineDescription.value
     override def getResolvers: Array[MigrationResolver]   = c.resolvers.resolvers.toArray
-    override def isSkipDefaultResolvers: Boolean =
-      `SkipDefaultResolvers?`.isSkipDefaultResolvers(c.skipDefaultResolvers)
-    override def getCallbacks: Array[FlywayCallback] = c.callbacks.callbacks.toArray
-    override def isSkipDefaultCallbacks: Boolean =
-      `SkipDefaultCallbacks?`.isSkipDefaultCallbacks(c.skipDefaultCallbacks)
-    override def getSqlMigrationPrefix: String           = c.sqlMigrationPrefix.value
-    override def getUndoSqlMigrationPrefix: String       = c.undoSqlMigrationPrefix.value
-    override def getRepeatableSqlMigrationPrefix: String = c.repeatableSqlMigrationPrefix.value
-    override def getSqlMigrationSeparator: String        = c.sqlMigrationSeparator.value
+    override def isSkipDefaultResolvers: Boolean          = c.skipDefaultResolvers.isSkipDefaultResolvers
+    override def getCallbacks: Array[FlywayCallback]      = c.callbacks.callbacks.toArray
+    override def isSkipDefaultCallbacks: Boolean          = c.skipDefaultCallbacks.isSkipDefaultCallbacks
+    override def getSqlMigrationPrefix: String            = c.sqlMigrationPrefix.value
+    override def getUndoSqlMigrationPrefix: String        = c.undoSqlMigrationPrefix.value
+    override def getRepeatableSqlMigrationPrefix: String  = c.repeatableSqlMigrationPrefix.value
+    override def getSqlMigrationSeparator: String         = c.sqlMigrationSeparator.value
     override def getSqlMigrationSuffix: String =
       c.sqlMigrationSuffixes.sqlMigrationSuffixes.headOption.map(_.value).orNull
     override def getSqlMigrationSuffixes: Array[String] =
       c.sqlMigrationSuffixes.sqlMigrationSuffixes.map(_.value).toArray
-    override def isPlaceholderReplacement: Boolean =
-      `ReplacePlaceholders?`.isPlaceholderReplacement(c.placeholderReplacement)
-    override def getPlaceholderSuffix: String = c.placeholderSuffix.value
-    override def getPlaceholderPrefix: String = c.placeholderPrefix.value
+    override def isPlaceholderReplacement: Boolean = c.placeholderReplacement.isPlaceholderReplacement
+    override def getPlaceholderSuffix: String      = c.placeholderSuffix.value
+    override def getPlaceholderPrefix: String      = c.placeholderPrefix.value
     override def getPlaceholders: util.Map[String, String] =
       CollectionConversions.toJavaMap(c.placeholders.placeholders)
-    override def getTarget: api.MigrationVersion = c.baselineVersion.version.toFlyway
-    override def getTable: String                = c.table.value
-    override def getSchemas: Array[String]       = c.schemas.schemas.toArray
-    override def getEncoding: String             = c.encoding.value.name
-    override def getLocations: Array[String]     = c.locations.locations.map(_.value).toArray
-    override def isBaselineOnMigrate: Boolean    = `BaselineOnMigrate?`.isBaselineOnMigrate(c.baselineOnMigrate)
-    override def isOutOfOrder: Boolean           = `AllowOutOfOrder?`.isOutOfOrder(c.outOfOrder)
-    override def isIgnoreMissingMigrations: Boolean =
-      `IgnoreMissingMigrations?`.isIgnoreMissingMigrations(c.ignoreMissingMigrations)
-    override def isIgnoreFutureMigrations: Boolean =
-      `IgnoreFutureMigrations?`.isIgnoreFutureMigrations(c.ignoreFutureMigrations)
-    override def isValidateOnMigrate: Boolean = `ValidateOnMigrate?`.isValidateOnMigrate(c.validateOnMigrate)
-    override def isCleanOnValidationError: Boolean =
-      `CleanOnValidationError?`.isCleanOnValidationError(c.cleanOnValidationError)
-    override def isCleanDisabled: Boolean              = `CleanAllowed?`.isCleanDisabled(c.clean)
-    override def isMixed: Boolean                      = `MixedTransactionAllowed?`.isMixed(c.mixed)
-    override def isGroup: Boolean                      = `GroupTransactions?`.isGroup(c.group)
+    override def getTarget: api.MigrationVersion       = c.baselineVersion.version.toFlyway
+    override def getTable: String                      = c.table.value
+    override def getSchemas: Array[String]             = c.schemas.schemas.toArray
+    override def getEncoding: String                   = c.encoding.value.name
+    override def getLocations: Array[String]           = c.locations.locations.map(_.value).toArray
+    override def isBaselineOnMigrate: Boolean          = c.baselineOnMigrate.isBaselineOnMigrate
+    override def isOutOfOrder: Boolean                 = `AllowOutOfOrder?`.isOutOfOrder(c.outOfOrder)
+    override def isIgnoreMissingMigrations: Boolean    = c.ignoreMissingMigrations.isIgnoreMissingMigrations
+    override def isIgnoreFutureMigrations: Boolean     = c.ignoreFutureMigrations.isIgnoreFutureMigrations
+    override def isValidateOnMigrate: Boolean          = c.validateOnMigrate.isValidateOnMigrate
+    override def isCleanOnValidationError: Boolean     = c.cleanOnValidationError.isCleanOnValidationError
+    override def isCleanDisabled: Boolean              = c.clean.isCleanDisabled
+    override def isMixed: Boolean                      = c.mixed.isMixed
+    override def isGroup: Boolean                      = c.group.isGroup
     override def getInstalledBy: String                = c.installedBy.map(_.value).orNull
     override def getErrorHandlers: Array[ErrorHandler] = c.errorHandlers.errorHandlers.toArray
     override def getDryRunOutput: OutputStream         = c.dryRunOutput.map(_.out).orNull
