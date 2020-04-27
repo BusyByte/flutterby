@@ -3,9 +3,8 @@ package flutterby.core.config
 import java.io.OutputStream
 import java.util
 
-import flutterby.core.MigrationVersion.NormalMigrationVersion
 import flutterby.core.jdk.CollectionConversions
-import flutterby.core.{ DisplayText, MigrationVersion }
+import flutterby.core.MigrationVersion
 import javax.sql.DataSource
 import org.flywaydb.core.api
 import org.flywaydb.core.api.callback.FlywayCallback
@@ -54,7 +53,7 @@ object FlutterbyConfig {
   val default = FlutterbyConfig(
     classLoader = Thread.currentThread.getContextClassLoader,
     dataSource = None,
-    baselineVersion = NormalMigrationVersion(DisplayText("1")),
+    baselineVersion = MigrationVersion.fromVersionString(Some("1")),
     baselineDescription = "<< Flyway Baseline >>",
     resolvers = Vector.empty,
     skipDefaultResolvers = false,

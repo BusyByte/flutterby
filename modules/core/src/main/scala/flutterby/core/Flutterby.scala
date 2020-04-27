@@ -239,41 +239,44 @@ object MigrationType {
 }
 final case class DisplayText(value: String) extends AnyVal
 final case class Version(value: String)
-sealed trait MigrationVersion {
-  def version: Option[Version]
-  def displayText: DisplayText
-}
+final case class MigrationVersion(version: Option[Version], displayText: DisplayText)
 object MigrationVersion {
-  case object EMPTY extends MigrationVersion {
-    val version: Option[Version] = None
-    val displayText: DisplayText = DisplayText("<< Empty Schema >>")
-  }
-  case object LATEST extends MigrationVersion {
-    val version: Option[Version] = Some(Version(Long.MaxValue.toString))
-    val displayText: DisplayText = DisplayText("<< Latest Version >>")
-  }
-  case object CURRENT extends MigrationVersion { //TODO these need specs to make sure
+  val EMPTY = MigrationVersion(
+    version = None,
+    displayText = DisplayText("<< Empty Schema >>")
+  )
+  val LATEST = MigrationVersion(
+    version = Some(Version(Long.MaxValue.toString)),
+    displayText = DisplayText("<< Latest Version >>")
+  )
+
+  val CURRENT = {
     val currentVersionDisplayText = "<< Current Version >>"
-    val version: Option[Version]  = Some(Version(currentVersionDisplayText))
-    val displayText: DisplayText  = DisplayText(currentVersionDisplayText)
+    MigrationVersion(
+      version = Some(Version(currentVersionDisplayText)),
+      displayText = DisplayText(currentVersionDisplayText)
+    )
   }
 
-  final case class NormalMigrationVersion(displayText: DisplayText) extends MigrationVersion {
-    val version: Option[Version] = Some(Version(displayText.value))
+  def fromVersionString(version: Option[String]): MigrationVersion = version match {
+    case None                                           => EMPTY
+    case Some(v) if "current".equalsIgnoreCase(v)       => CURRENT
+    case Some(v) if LATEST.version.exists(_.value == v) => LATEST
+    case Some(v)                                        => MigrationVersion(Some(Version(v)), DisplayText(v))
   }
 
   def fromFlyway(f: FlywayMigrationVersion): MigrationVersion = f match {
     case FlywayMigrationVersion.EMPTY   => EMPTY
     case FlywayMigrationVersion.LATEST  => LATEST
     case FlywayMigrationVersion.CURRENT => CURRENT
-    case other                          => NormalMigrationVersion(DisplayText(other.toString))
+    case other                          => fromVersionString(Some(other.toString))
   }
 
   def toFlyway(m: MigrationVersion): FlywayMigrationVersion = m match {
-    case EMPTY                                        => FlywayMigrationVersion.EMPTY
-    case LATEST                                       => FlywayMigrationVersion.LATEST
-    case CURRENT                                      => FlywayMigrationVersion.CURRENT
-    case NormalMigrationVersion(DisplayText(version)) => FlywayMigrationVersion.fromVersion(version)
+    case EMPTY                               => FlywayMigrationVersion.EMPTY
+    case LATEST                              => FlywayMigrationVersion.LATEST
+    case CURRENT                             => FlywayMigrationVersion.CURRENT
+    case MigrationVersion(_, DisplayText(d)) => FlywayMigrationVersion.fromVersion(d)
   }
 
   implicit class MigrationVersionOps(val m: MigrationVersion) extends AnyVal {
