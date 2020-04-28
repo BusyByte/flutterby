@@ -341,6 +341,7 @@ object FlutterbyConfig {
     dryRunOutput = Defaults.dryRunOutput
   )
 
+  //TODO: Some of these callback implement ConfigurationAware, address
   def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration {
 
     override def getClassLoader: ClassLoader                      = c.classLoader
