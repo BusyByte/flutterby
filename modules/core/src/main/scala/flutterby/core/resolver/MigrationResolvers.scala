@@ -1,19 +1,18 @@
 package flutterby.core.resolver
 
-import java.sql.Connection
 import java.util
 
 import flutterby.core.config.FlutterbyConfig
+import flutterby.core.executor.MigrationExecutor
 import flutterby.core.jdk.CollectionConversions
 import flutterby.core.{ Checksum, Description, MigrationType, MigrationVersion, Script }
 import org.flywaydb.core.api
 import org.flywaydb.core.api.resolver.{
-  MigrationExecutor => FlywayMigrationExecutor,
   MigrationResolver => FlywayMigrationResolver,
-  ResolvedMigration => FlywayResolvedMigration
+  ResolvedMigration => FlywayResolvedMigration,
+  Context => FlywayContext
 }
-
-import scala.util.Try
+import org.flywaydb.core.api.executor.{ MigrationExecutor => FlywayMigrationExecutor }
 
 sealed trait FlutterbyMigrationResolver
 object FlutterbyMigrationResolver {
@@ -22,14 +21,16 @@ object FlutterbyMigrationResolver {
       extends FlutterbyMigrationResolver
 
   trait MigrationResolver extends FlutterbyMigrationResolver {
-    def resolveMigrations: Iterable[ResolvedMigration]
+    def resolveMigrations(config: FlutterbyConfig): Iterable[ResolvedMigration]
   }
 
   object MigrationResolver {
 
     def toFlyway(m: MigrationResolver): FlywayMigrationResolver = new FlywayMigrationResolver {
-      override def resolveMigrations(): util.Collection[FlywayResolvedMigration] =
-        CollectionConversions.toJavaCollection(m.resolveMigrations.map(ResolvedMigration.toFlyway))
+      override def resolveMigrations(context: FlywayContext): util.Collection[FlywayResolvedMigration] =
+        CollectionConversions.toJavaCollection(
+          m.resolveMigrations(FlutterbyConfig.fromFlyway(context.getConfiguration)).map(ResolvedMigration.toFlyway)
+        )
     }
   }
 
@@ -59,22 +60,6 @@ object ResolvedMigration {
     override def getType: api.MigrationType           = MigrationType.toFlyway(r.`type`)
     override def getPhysicalLocation: String          = r.physicalLocation.value
     override def getExecutor: FlywayMigrationExecutor = MigrationExecutor.toFlyway(r.executor)
-  }
-}
-
-trait MigrationExecutor {
-
-  /**
-    * If there is an exception in the try it will
-    * end up being thrown in the Flyway MigrationExecutor
-    */
-  def execute(connection: Connection): Try[Unit]
-  def executeInTransaction: Boolean
-}
-object MigrationExecutor {
-  def toFlyway(m: MigrationExecutor): FlywayMigrationExecutor = new FlywayMigrationExecutor {
-    override def execute(connection: Connection): Unit = m.execute(connection).get
-    override def executeInTransaction(): Boolean       = m.executeInTransaction
   }
 }
 

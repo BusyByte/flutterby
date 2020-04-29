@@ -4,14 +4,15 @@ import java.io.OutputStream
 import java.nio.charset.{ Charset, StandardCharsets }
 import java.util
 
-import flutterby.core.callback.{ Callbacks, FlutterbyCallback }
+import com.github.ghik.silencer.silent
 import flutterby.core.jdk.CollectionConversions
 import flutterby.core.MigrationVersion
-import flutterby.core.errorhandler.{ ErrorHandler, ErrorHandlers }
 import flutterby.core.resolver.{ FlutterbyMigrationResolver, MigrationResolvers }
 import javax.sql.DataSource
 import org.flywaydb.core.api
-import org.flywaydb.core.api.configuration.FlywayConfiguration
+import org.flywaydb.core.api.Location
+import org.flywaydb.core.api.configuration.{ Configuration => FlywayConfiguration }
+import org.flywaydb.core.api.errorhandler.ErrorHandler
 
 final case class BaselineVersion(version: MigrationVersion)
 
@@ -88,8 +89,7 @@ final case class Schemas(schemas: Vector[String])
 
 final case class SqlMigrationEncoding(value: Charset)
 
-final case class MigrationLocation(value: String) extends AnyVal
-final case class MigrationLocations(locations: Vector[MigrationLocation])
+final case class MigrationLocations(locations: Vector[Location])
 
 sealed trait `BaselineOnMigrate?`
 object `BaselineOnMigrate?` {
@@ -234,7 +234,6 @@ final case class FlutterbyConfig(
     baselineDescription: BaselineDescription,
     resolvers: MigrationResolvers,
     skipDefaultResolvers: `SkipDefaultResolvers?`,
-    callbacks: Callbacks,
     skipDefaultCallbacks: `SkipDefaultCallbacks?`,
     sqlMigrationPrefix: SqlMigrationPrefix,
     undoSqlMigrationPrefix: UndoSqlMigrationPrefix,
@@ -260,7 +259,6 @@ final case class FlutterbyConfig(
     mixed: `MixedTransactionAllowed?`,
     group: `GroupTransactions?`,
     installedBy: Option[InstalledBy],
-    errorHandlers: ErrorHandlers,
     dryRunOutput: Option[DryRunOutput]
 )
 
@@ -272,7 +270,6 @@ object FlutterbyConfig {
     val baselineDescription: BaselineDescription = BaselineDescription("<< Flyway Baseline >>")
     val resolvers                                = MigrationResolvers(Vector.empty)
     val skipDefaultResolvers                     = `SkipDefaultResolvers?`.UseDefaultResolvers
-    val callbacks                                = Callbacks(Vector.empty)
     val skipDefaultCallbacks                     = `SkipDefaultCallbacks?`.UseDefaultCallbacks
     val sqlMigrationPrefix                       = SqlMigrationPrefix("V")
     val undoSqlMigrationPrefix                   = UndoSqlMigrationPrefix("U")
@@ -287,7 +284,7 @@ object FlutterbyConfig {
     val table                                    = SchemaHistoryTable("flyway_schema_history")
     val schemas                                  = Schemas(Vector.empty)
     val encoding                                 = SqlMigrationEncoding(StandardCharsets.UTF_8)
-    val locations                                = MigrationLocations(Vector(MigrationLocation("db/migration")))
+    val locations                                = MigrationLocations(Vector(new Location("db/migration")))
     val baselineOnMigrate                        = `BaselineOnMigrate?`.DoNotBaseline
     val outOfOrder                               = `AllowOutOfOrder?`.DoNotAllow
     val ignoreMissingMigrations                  = `IgnoreMissingMigrations?`.DoNotIgnore
@@ -298,7 +295,6 @@ object FlutterbyConfig {
     val mixed                                    = `MixedTransactionAllowed?`.DoNotAllowMixed
     val group                                    = `GroupTransactions?`.DoNotGroup
     val installedBy: Option[InstalledBy]         = None
-    val errorHandlers                            = ErrorHandlers(Vector.empty)
     val dryRunOutput: Option[DryRunOutput]       = None
   }
 
@@ -309,7 +305,6 @@ object FlutterbyConfig {
     baselineDescription = Defaults.baselineDescription,
     resolvers = Defaults.resolvers,
     skipDefaultResolvers = Defaults.skipDefaultResolvers,
-    callbacks = Defaults.callbacks,
     skipDefaultCallbacks = Defaults.skipDefaultCallbacks,
     sqlMigrationPrefix = Defaults.sqlMigrationPrefix,
     undoSqlMigrationPrefix = Defaults.undoSqlMigrationPrefix,
@@ -335,28 +330,23 @@ object FlutterbyConfig {
     mixed = Defaults.mixed,
     group = Defaults.group,
     installedBy = Defaults.installedBy,
-    errorHandlers = Defaults.errorHandlers,
     dryRunOutput = Defaults.dryRunOutput
   )
 
   def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration {
-
     override def getClassLoader: ClassLoader              = c.classLoader
     override def getDataSource: DataSource                = c.dataSource.orNull
     override def getBaselineVersion: api.MigrationVersion = c.baselineVersion.version.toFlyway
     override def getBaselineDescription: String           = c.baselineDescription.value
     override def getResolvers: Array[api.resolver.MigrationResolver] =
       c.resolvers.resolvers.map(r => FlutterbyMigrationResolver.toFlyway(r, c)).toArray
-    override def isSkipDefaultResolvers: Boolean = c.skipDefaultResolvers.isSkipDefaultResolvers
-    override def getCallbacks: Array[api.callback.FlywayCallback] =
-      c.callbacks.callbacks.map(cb => FlutterbyCallback.toFlyway(cb, c)).toArray
-    override def isSkipDefaultCallbacks: Boolean         = c.skipDefaultCallbacks.isSkipDefaultCallbacks
-    override def getSqlMigrationPrefix: String           = c.sqlMigrationPrefix.value
-    override def getUndoSqlMigrationPrefix: String       = c.undoSqlMigrationPrefix.value
-    override def getRepeatableSqlMigrationPrefix: String = c.repeatableSqlMigrationPrefix.value
-    override def getSqlMigrationSeparator: String        = c.sqlMigrationSeparator.value
-    override def getSqlMigrationSuffix: String =
-      c.sqlMigrationSuffixes.sqlMigrationSuffixes.headOption.map(_.value).orNull
+    override def isSkipDefaultResolvers: Boolean            = c.skipDefaultResolvers.isSkipDefaultResolvers
+    override def getCallbacks: Array[api.callback.Callback] = Array.empty //TODO: address
+    override def isSkipDefaultCallbacks: Boolean            = c.skipDefaultCallbacks.isSkipDefaultCallbacks
+    override def getSqlMigrationPrefix: String              = c.sqlMigrationPrefix.value
+    override def getUndoSqlMigrationPrefix: String          = c.undoSqlMigrationPrefix.value
+    override def getRepeatableSqlMigrationPrefix: String    = c.repeatableSqlMigrationPrefix.value
+    override def getSqlMigrationSeparator: String           = c.sqlMigrationSeparator.value
     override def getSqlMigrationSuffixes: Array[String] =
       c.sqlMigrationSuffixes.sqlMigrationSuffixes.map(_.value).toArray
     override def isPlaceholderReplacement: Boolean = c.placeholderReplacement.isPlaceholderReplacement
@@ -364,25 +354,39 @@ object FlutterbyConfig {
     override def getPlaceholderPrefix: String      = c.placeholderPrefix.value
     override def getPlaceholders: util.Map[String, String] =
       CollectionConversions.toJavaMap(c.placeholders.placeholders)
-    override def getTarget: api.MigrationVersion    = c.target.map(t => MigrationVersion.toFlyway(t.target)).orNull
-    override def getTable: String                   = c.table.value
-    override def getSchemas: Array[String]          = c.schemas.schemas.toArray
-    override def getEncoding: String                = c.encoding.value.name
-    override def getLocations: Array[String]        = c.locations.locations.map(_.value).toArray
-    override def isBaselineOnMigrate: Boolean       = c.baselineOnMigrate.isBaselineOnMigrate
-    override def isOutOfOrder: Boolean              = `AllowOutOfOrder?`.isOutOfOrder(c.outOfOrder)
-    override def isIgnoreMissingMigrations: Boolean = c.ignoreMissingMigrations.isIgnoreMissingMigrations
-    override def isIgnoreFutureMigrations: Boolean  = c.ignoreFutureMigrations.isIgnoreFutureMigrations
-    override def isValidateOnMigrate: Boolean       = c.validateOnMigrate.isValidateOnMigrate
-    override def isCleanOnValidationError: Boolean  = c.cleanOnValidationError.isCleanOnValidationError
-    override def isCleanDisabled: Boolean           = c.clean.isCleanDisabled
-    override def isMixed: Boolean                   = c.mixed.isMixed
-    override def isGroup: Boolean                   = c.group.isGroup
-    override def getInstalledBy: String             = c.installedBy.map(_.value).orNull
-    override def getErrorHandlers: Array[api.errorhandler.ErrorHandler] =
-      c.errorHandlers.errorHandlers.map(ErrorHandler.toFlyway).toArray
-    override def getDryRunOutput: OutputStream = c.dryRunOutput.map(_.out).orNull
+    override def getTarget: api.MigrationVersion                             = c.target.map(t => MigrationVersion.toFlyway(t.target)).orNull
+    override def getTable: String                                            = c.table.value
+    override def getSchemas: Array[String]                                   = c.schemas.schemas.toArray
+    override def getEncoding: Charset                                        = c.encoding.value
+    override def getLocations: Array[Location]                               = c.locations.locations.toArray //TODO: address
+    override def isBaselineOnMigrate: Boolean                                = c.baselineOnMigrate.isBaselineOnMigrate
+    override def isOutOfOrder: Boolean                                       = `AllowOutOfOrder?`.isOutOfOrder(c.outOfOrder)
+    override def isIgnoreMissingMigrations: Boolean                          = c.ignoreMissingMigrations.isIgnoreMissingMigrations
+    override def isIgnoreFutureMigrations: Boolean                           = c.ignoreFutureMigrations.isIgnoreFutureMigrations
+    override def isValidateOnMigrate: Boolean                                = c.validateOnMigrate.isValidateOnMigrate
+    override def isCleanOnValidationError: Boolean                           = c.cleanOnValidationError.isCleanOnValidationError
+    override def isCleanDisabled: Boolean                                    = c.clean.isCleanDisabled
+    override def isMixed: Boolean                                            = c.mixed.isMixed
+    override def isGroup: Boolean                                            = c.group.isGroup
+    override def getInstalledBy: String                                      = c.installedBy.map(_.value).orNull
+    @silent("deprecated") override def getErrorHandlers: Array[ErrorHandler] = Array.empty
+    override def getDryRunOutput: OutputStream                               = c.dryRunOutput.map(_.out).orNull
+
+    override def getConnectRetries: Int             = ??? //TODO: implement
+    override def getInitSql: String                 = ???
+    override def isIgnoreIgnoredMigrations: Boolean = ???
+    override def isIgnorePendingMigrations: Boolean = ???
+    override def getErrorOverrides: Array[String]   = ???
+    override def isStream: Boolean                  = ???
+    override def isBatch: Boolean                   = ???
+    override def isOracleSqlplus: Boolean           = ???
+    override def getLicenseKey: String              = ???
   }
+
+  def fromFlyway(c: FlywayConfiguration): FlutterbyConfig = {
+    val _ = c
+    ???
+  } //TODO: Implement me
 
   implicit class FlutterbyConfigOps(val c: FlutterbyConfig) extends AnyVal {
     def toFlyway: FlywayConfiguration = FlutterbyConfig.toFlyway(c)
