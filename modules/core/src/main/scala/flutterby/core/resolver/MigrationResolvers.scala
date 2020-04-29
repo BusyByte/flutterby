@@ -42,23 +42,23 @@ object FlutterbyMigrationResolver {
 
 final case class PhysicalLocation(value: String) extends AnyVal
 trait ResolvedMigration {
-  def getVersion: MigrationVersion
-  def getDescription: Description
-  def getScript: Script
-  def getChecksum: Checksum
-  def getType: MigrationType
-  def getPhysicalLocation: PhysicalLocation
-  def getExecutor: MigrationExecutor
+  def version: MigrationVersion
+  def description: Description
+  def script: Script
+  def checksum: Checksum
+  def `type`: MigrationType
+  def physicalLocation: PhysicalLocation
+  def executor: MigrationExecutor
 }
 object ResolvedMigration {
   def toFlyway(r: ResolvedMigration): FlywayResolvedMigration = new FlywayResolvedMigration {
-    override def getVersion: api.MigrationVersion     = MigrationVersion.toFlyway(r.getVersion)
-    override def getDescription: String               = r.getDescription.value
-    override def getScript: String                    = r.getScript.value
-    override def getChecksum: Integer                 = r.getChecksum.value
-    override def getType: api.MigrationType           = MigrationType.toFlyway(r.getType)
-    override def getPhysicalLocation: String          = r.getPhysicalLocation.value
-    override def getExecutor: FlywayMigrationExecutor = MigrationExecutor.toFlyway(r.getExecutor)
+    override def getVersion: api.MigrationVersion     = MigrationVersion.toFlyway(r.version)
+    override def getDescription: String               = r.description.value
+    override def getScript: String                    = r.script.value
+    override def getChecksum: Integer                 = r.checksum.value
+    override def getType: api.MigrationType           = MigrationType.toFlyway(r.`type`)
+    override def getPhysicalLocation: String          = r.physicalLocation.value
+    override def getExecutor: FlywayMigrationExecutor = MigrationExecutor.toFlyway(r.executor)
   }
 }
 
