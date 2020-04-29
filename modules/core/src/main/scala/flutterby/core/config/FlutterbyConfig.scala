@@ -4,7 +4,7 @@ import java.io.OutputStream
 import java.nio.charset.{ Charset, StandardCharsets }
 import java.util
 
-import flutterby.core.callback.{ Callback, Callbacks }
+import flutterby.core.callback.{ Callbacks, FlutterbyCallback }
 import flutterby.core.jdk.CollectionConversions
 import flutterby.core.MigrationVersion
 import flutterby.core.errorhandler.{ ErrorHandler, ErrorHandlers }
@@ -344,18 +344,19 @@ object FlutterbyConfig {
   //TODO: Some of these callback implement ConfigurationAware, address
   def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration {
 
-    override def getClassLoader: ClassLoader                      = c.classLoader
-    override def getDataSource: DataSource                        = c.dataSource.orNull
-    override def getBaselineVersion: api.MigrationVersion         = c.baselineVersion.version.toFlyway
-    override def getBaselineDescription: String                   = c.baselineDescription.value
-    override def getResolvers: Array[MigrationResolver]           = c.resolvers.resolvers.toArray
-    override def isSkipDefaultResolvers: Boolean                  = c.skipDefaultResolvers.isSkipDefaultResolvers
-    override def getCallbacks: Array[api.callback.FlywayCallback] = c.callbacks.callbacks.map(Callback.toFlyway).toArray
-    override def isSkipDefaultCallbacks: Boolean                  = c.skipDefaultCallbacks.isSkipDefaultCallbacks
-    override def getSqlMigrationPrefix: String                    = c.sqlMigrationPrefix.value
-    override def getUndoSqlMigrationPrefix: String                = c.undoSqlMigrationPrefix.value
-    override def getRepeatableSqlMigrationPrefix: String          = c.repeatableSqlMigrationPrefix.value
-    override def getSqlMigrationSeparator: String                 = c.sqlMigrationSeparator.value
+    override def getClassLoader: ClassLoader              = c.classLoader
+    override def getDataSource: DataSource                = c.dataSource.orNull
+    override def getBaselineVersion: api.MigrationVersion = c.baselineVersion.version.toFlyway
+    override def getBaselineDescription: String           = c.baselineDescription.value
+    override def getResolvers: Array[MigrationResolver]   = c.resolvers.resolvers.toArray
+    override def isSkipDefaultResolvers: Boolean          = c.skipDefaultResolvers.isSkipDefaultResolvers
+    override def getCallbacks: Array[api.callback.FlywayCallback] =
+      c.callbacks.callbacks.map(cb => FlutterbyCallback.toFlyway(cb, c)).toArray
+    override def isSkipDefaultCallbacks: Boolean         = c.skipDefaultCallbacks.isSkipDefaultCallbacks
+    override def getSqlMigrationPrefix: String           = c.sqlMigrationPrefix.value
+    override def getUndoSqlMigrationPrefix: String       = c.undoSqlMigrationPrefix.value
+    override def getRepeatableSqlMigrationPrefix: String = c.repeatableSqlMigrationPrefix.value
+    override def getSqlMigrationSeparator: String        = c.sqlMigrationSeparator.value
     override def getSqlMigrationSuffix: String =
       c.sqlMigrationSuffixes.sqlMigrationSuffixes.headOption.map(_.value).orNull
     override def getSqlMigrationSuffixes: Array[String] =
