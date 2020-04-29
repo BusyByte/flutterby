@@ -364,7 +364,7 @@ object FlutterbyConfig {
     override def getPlaceholderPrefix: String      = c.placeholderPrefix.value
     override def getPlaceholders: util.Map[String, String] =
       CollectionConversions.toJavaMap(c.placeholders.placeholders)
-    override def getTarget: api.MigrationVersion    = c.baselineVersion.version.toFlyway
+    override def getTarget: api.MigrationVersion    = c.target.map(t => MigrationVersion.toFlyway(t.target)).orNull
     override def getTable: String                   = c.table.value
     override def getSchemas: Array[String]          = c.schemas.schemas.toArray
     override def getEncoding: String                = c.encoding.value.name
