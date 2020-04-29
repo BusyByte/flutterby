@@ -8,16 +8,14 @@ import flutterby.core.callback.{ Callbacks, FlutterbyCallback }
 import flutterby.core.jdk.CollectionConversions
 import flutterby.core.MigrationVersion
 import flutterby.core.errorhandler.{ ErrorHandler, ErrorHandlers }
+import flutterby.core.resolver.{ FlutterbyMigrationResolver, MigrationResolvers }
 import javax.sql.DataSource
 import org.flywaydb.core.api
 import org.flywaydb.core.api.configuration.FlywayConfiguration
-import org.flywaydb.core.api.resolver.MigrationResolver
 
 final case class BaselineVersion(version: MigrationVersion)
 
 final case class BaselineDescription(value: String) extends AnyVal
-
-final case class MigrationResolvers(resolvers: Vector[MigrationResolver])
 
 sealed trait `SkipDefaultResolvers?`
 object `SkipDefaultResolvers?` {
@@ -341,15 +339,15 @@ object FlutterbyConfig {
     dryRunOutput = Defaults.dryRunOutput
   )
 
-  //TODO: Some of these callback implement ConfigurationAware, address
   def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration {
 
     override def getClassLoader: ClassLoader              = c.classLoader
     override def getDataSource: DataSource                = c.dataSource.orNull
     override def getBaselineVersion: api.MigrationVersion = c.baselineVersion.version.toFlyway
     override def getBaselineDescription: String           = c.baselineDescription.value
-    override def getResolvers: Array[MigrationResolver]   = c.resolvers.resolvers.toArray
-    override def isSkipDefaultResolvers: Boolean          = c.skipDefaultResolvers.isSkipDefaultResolvers
+    override def getResolvers: Array[api.resolver.MigrationResolver] =
+      c.resolvers.resolvers.map(r => FlutterbyMigrationResolver.toFlyway(r, c)).toArray
+    override def isSkipDefaultResolvers: Boolean = c.skipDefaultResolvers.isSkipDefaultResolvers
     override def getCallbacks: Array[api.callback.FlywayCallback] =
       c.callbacks.callbacks.map(cb => FlutterbyCallback.toFlyway(cb, c)).toArray
     override def isSkipDefaultCallbacks: Boolean         = c.skipDefaultCallbacks.isSkipDefaultCallbacks

@@ -236,6 +236,19 @@ object MigrationType {
     case FlywayMigrationType.CUSTOM           => CUSTOM
     case FlywayMigrationType.UNDO_CUSTOM      => UNDO_CUSTOM
   }
+
+  def toFlyway(m: MigrationType): FlywayMigrationType = m match {
+    case SCHEMA           => FlywayMigrationType.SCHEMA
+    case BASELINE         => FlywayMigrationType.BASELINE
+    case SQL              => FlywayMigrationType.SQL
+    case UNDO_SQL         => FlywayMigrationType.UNDO_SQL
+    case JDBC             => FlywayMigrationType.JDBC
+    case UNDO_JDBC        => FlywayMigrationType.UNDO_JDBC
+    case SPRING_JDBC      => FlywayMigrationType.SPRING_JDBC
+    case UNDO_SPRING_JDBC => FlywayMigrationType.UNDO_SPRING_JDBC
+    case CUSTOM           => FlywayMigrationType.CUSTOM
+    case UNDO_CUSTOM      => FlywayMigrationType.UNDO_CUSTOM
+  }
 }
 final case class DisplayText(value: String) extends AnyVal
 final case class Version(value: String)
