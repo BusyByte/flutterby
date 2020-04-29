@@ -11,12 +11,15 @@ import org.flywaydb.core.api.{
 
 import scala.concurrent.duration.FiniteDuration
 
+final case class SuccessfullyAppliedMigrationCount(value: Int) extends AnyVal
+final case class SuccessfullyUndoneMigrationCount(value: Int) extends AnyVal
+
 trait Flutterby[F[_]] {
-  def baseline: F[Unit]
-  def migrate: F[Int]
-  def info: F[MigrationInfoService[F]]
+  def baseline(): F[Unit]
+  def migrate(): F[SuccessfullyAppliedMigrationCount]
+  def info(): F[MigrationInfoService[F]]
   def validate(): F[Unit]
-  def undo(): F[Int]
+  def undo(): F[SuccessfullyUndoneMigrationCount]
   def repair(): F[Unit]
   def clean(): F[Unit]
 }
