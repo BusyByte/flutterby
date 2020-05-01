@@ -1,13 +1,14 @@
 package flutterby.core.config
 
-import org.flywaydb.core.Flyway
+import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.flywaydb.core.internal.license.FlywayProUpgradeRequiredException
 import org.specs2.mutable.Specification
+import com.github.ghik.silencer.silent
 
 class FlutterbyConfigSpec extends Specification {
   "default config is the same" in {
-    val converted = Flyway.configure().configuration(FlutterbyConfig.toFlyway(FlutterbyConfig.defaultConfig))
-    val expected  = Flyway.configure()
+    val converted = FlutterbyConfig.toFlyway(FlutterbyConfig.defaultConfig)
+    val expected  = new FluentConfiguration()
     converted.getClassLoader must_== expected.getClassLoader
     converted.getDataSource must_== expected.getDataSource
     converted.getBaselineVersion must_== expected.getBaselineVersion
@@ -41,7 +42,9 @@ class FlutterbyConfigSpec extends Specification {
     converted.isMixed must_== expected.isMixed
     converted.isGroup must_== expected.isGroup
     converted.getInstalledBy must_== expected.getInstalledBy
-    converted.getErrorHandlers must throwA[FlywayProUpgradeRequiredException]
+    @silent("deprecated") def assertErrorHandlers =
+      converted.getErrorHandlers must throwA[FlywayProUpgradeRequiredException]
+    assertErrorHandlers
     expected.getErrorHandlers must throwA[FlywayProUpgradeRequiredException]
     converted.getDryRunOutput must throwA[FlywayProUpgradeRequiredException]
     expected.getDryRunOutput must throwA[FlywayProUpgradeRequiredException]
