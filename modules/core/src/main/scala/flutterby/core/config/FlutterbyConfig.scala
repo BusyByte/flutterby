@@ -449,7 +449,7 @@ object FlutterbyConfig {
     licenseKey = Defaults.licenseKey
   )
 
-  def toFlyway(c: FlutterbyConfig): FlywayConfiguration = {
+  def toFlyway(c: FlutterbyConfig, suppressUpgradeErrors: Boolean): Try[FlywayConfiguration] = {
     val communityConfig = new FluentConfiguration(c.classLoader)
       .dataSource(c.dataSource.orNull)
       .baselineVersion(c.baselineVersion.version.toFlyway)
@@ -489,17 +489,17 @@ object FlutterbyConfig {
     val proEnterpriseConfig = Try {
       communityConfig
         .undoSqlMigrationPrefix(c.undoSqlMigrationPrefix.value)
-        .dryRunOutput(c.dryRunOutput.map(_.out).orNull)
+        .dryRunOutput(c.dryRunOutput.map(_.out).orNull) // TODO: some of these have alternatives
         .errorOverrides(c.errorOverrides.errorOverrides.map(_.value): _*)
         .stream(c.stream.isStream)
         .batch(c.batch.isBatch)
         .oracleSqlplus(c.oracleSqlplus.isOracleSqlplus)
         .licenseKey(c.licenseKey.map(_.value).orNull)
     }.recover {
-      case _: FlywayProUpgradeRequiredException => communityConfig
+      case _: FlywayProUpgradeRequiredException if suppressUpgradeErrors => communityConfig
     }
 
-    proEnterpriseConfig.get
+    proEnterpriseConfig
   }
 
   def fromFlyway(c: FlywayConfiguration): FlutterbyConfig = {
@@ -508,6 +508,7 @@ object FlutterbyConfig {
   } //TODO: Implement me
 
   implicit class FlutterbyConfigOps(val c: FlutterbyConfig) extends AnyVal {
-    def toFlyway: FlywayConfiguration = FlutterbyConfig.toFlyway(c)
+    def toFlyway(suppressUpgradeErrors: Boolean): Try[FlywayConfiguration] =
+      FlutterbyConfig.toFlyway(c, suppressUpgradeErrors)
   }
 }

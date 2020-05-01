@@ -7,7 +7,7 @@ import com.github.ghik.silencer.silent
 
 class FlutterbyConfigSpec extends Specification {
   "default config is the same" in {
-    val converted = FlutterbyConfig.toFlyway(FlutterbyConfig.defaultConfig)
+    val converted = FlutterbyConfig.toFlyway(FlutterbyConfig.defaultConfig, true).get
     val expected  = new FluentConfiguration()
     converted.getClassLoader must_== expected.getClassLoader
     converted.getDataSource must_== expected.getDataSource
