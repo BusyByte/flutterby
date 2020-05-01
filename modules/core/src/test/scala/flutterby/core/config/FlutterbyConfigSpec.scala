@@ -1,13 +1,12 @@
 package flutterby.core.config
 
-import com.github.ghik.silencer.silent
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.internal.license.FlywayProUpgradeRequiredException
 import org.specs2.mutable.Specification
 
 class FlutterbyConfigSpec extends Specification {
   "default config is the same" in {
-    val converted = FlutterbyConfig.toFlyway(FlutterbyConfig.defaultConfig)
+    val converted = Flyway.configure().configuration(FlutterbyConfig.toFlyway(FlutterbyConfig.defaultConfig))
     val expected  = Flyway.configure()
     converted.getClassLoader must_== expected.getClassLoader
     converted.getDataSource must_== expected.getDataSource
@@ -42,12 +41,25 @@ class FlutterbyConfigSpec extends Specification {
     converted.isMixed must_== expected.isMixed
     converted.isGroup must_== expected.isGroup
     converted.getInstalledBy must_== expected.getInstalledBy
-
-    @silent("deprecated") def assertDeprecatedErrorHandlers =
-      converted.getErrorHandlers must throwA[FlywayProUpgradeRequiredException]
-    assertDeprecatedErrorHandlers
+    converted.getErrorHandlers must throwA[FlywayProUpgradeRequiredException]
     expected.getErrorHandlers must throwA[FlywayProUpgradeRequiredException]
     converted.getDryRunOutput must throwA[FlywayProUpgradeRequiredException]
     expected.getDryRunOutput must throwA[FlywayProUpgradeRequiredException]
+
+    converted.getConnectRetries must_== expected.getConnectRetries
+    converted.getInitSql must_== expected.getInitSql
+    converted.isIgnoreIgnoredMigrations must_== expected.isIgnoreIgnoredMigrations
+    converted.isIgnorePendingMigrations must_== expected.isIgnorePendingMigrations
+
+    converted.getErrorOverrides must throwA[FlywayProUpgradeRequiredException]
+    expected.getErrorOverrides must throwA[FlywayProUpgradeRequiredException]
+    converted.isStream must throwA[FlywayProUpgradeRequiredException]
+    expected.isStream must throwA[FlywayProUpgradeRequiredException]
+    converted.isBatch must throwA[FlywayProUpgradeRequiredException]
+    expected.isBatch must throwA[FlywayProUpgradeRequiredException]
+    converted.isOracleSqlplus must throwA[FlywayProUpgradeRequiredException]
+    expected.isOracleSqlplus must throwA[FlywayProUpgradeRequiredException]
+    converted.getLicenseKey must throwA[FlywayProUpgradeRequiredException]
+    expected.getLicenseKey must throwA[FlywayProUpgradeRequiredException]
   }
 }

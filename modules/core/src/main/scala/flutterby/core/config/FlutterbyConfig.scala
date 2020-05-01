@@ -227,6 +227,91 @@ final case class InstalledBy(value: String) extends AnyVal
 
 final case class DryRunOutput(out: OutputStream)
 
+sealed trait `IgnoreIgnoredMigrations?`
+case object `IgnoreIgnoredMigrations?` {
+  case object ValidateIgnored extends `IgnoreIgnoredMigrations?`
+  case object DoNotValidateIgnored extends `IgnoreIgnoredMigrations?`
+
+  def isIgnoreIgnoredMigrations(i: `IgnoreIgnoredMigrations?`): Boolean = i match {
+    case ValidateIgnored      => false
+    case DoNotValidateIgnored => true
+  }
+
+  implicit class `IgnoreIgnoredMigrations?Ops`(val i: `IgnoreIgnoredMigrations?`) extends AnyVal {
+    def isIgnoreIgnoredMigrations: Boolean = `IgnoreIgnoredMigrations?`.isIgnoreIgnoredMigrations(i)
+  }
+}
+
+final case class ConnectionRetries(value: Int) extends AnyVal
+
+final case class InitSql(value: String) extends AnyVal
+
+sealed trait `IgnorePendingMigrations?`
+object `IgnorePendingMigrations?` {
+  case object ValidatePending extends `IgnorePendingMigrations?`
+  case object DoNotValidatePending extends `IgnorePendingMigrations?`
+
+  def isIgnorePendingMigrations(i: `IgnorePendingMigrations?`): Boolean = i match {
+    case ValidatePending      => false
+    case DoNotValidatePending => true
+  }
+
+  implicit class `IgnorePendingMigrations?Ops`(val i: `IgnorePendingMigrations?`) extends AnyVal {
+    def isIgnorePendingMigrations: Boolean = `IgnorePendingMigrations?`.isIgnorePendingMigrations(i)
+  }
+}
+
+final case class ErrorOverride(value: String) extends AnyVal
+final case class ErrorOverrides(errorOverrides: Vector[ErrorOverride])
+
+sealed trait `ShouldStreamMigrations?`
+object `ShouldStreamMigrations?` {
+  case object Stream extends `ShouldStreamMigrations?`
+  case object DoNotStream extends `ShouldStreamMigrations?`
+
+  def isStream(s: `ShouldStreamMigrations?`): Boolean = s match {
+    case Stream      => true
+    case DoNotStream => false
+  }
+
+  implicit class `ShouldStreamMigrations?Ops`(val s: `ShouldStreamMigrations?`) extends AnyVal {
+    def isStream: Boolean = `ShouldStreamMigrations?`.isStream(s)
+  }
+
+}
+
+sealed trait `ShouldBatchSqlStatements?`
+object `ShouldBatchSqlStatements?` {
+  case object BatchSqlStatements extends `ShouldBatchSqlStatements?`
+  case object DoNotBatchSqlStatements extends `ShouldBatchSqlStatements?`
+
+  def isBatch(s: `ShouldBatchSqlStatements?`): Boolean = s match {
+    case BatchSqlStatements      => true
+    case DoNotBatchSqlStatements => false
+  }
+
+  implicit class `ShouldBatchSqlStatements?Ops`(val s: `ShouldBatchSqlStatements?`) extends AnyVal {
+    def isBatch: Boolean = `ShouldBatchSqlStatements?`.isBatch(s)
+  }
+}
+
+sealed trait `EnableOracleSqlplusSupport?`
+object `EnableOracleSqlplusSupport?` {
+  case object EnableSupport extends `EnableOracleSqlplusSupport?`
+  case object DoNotEnableSupport extends `EnableOracleSqlplusSupport?`
+
+  def isOracleSqlplus(e: `EnableOracleSqlplusSupport?`): Boolean = e match {
+    case EnableSupport      => true
+    case DoNotEnableSupport => false
+  }
+
+  implicit class `EnableOracleSqlplusSupport?Ops`(val e: `EnableOracleSqlplusSupport?`) extends AnyVal {
+    def isOracleSqlplus: Boolean = `EnableOracleSqlplusSupport?`.isOracleSqlplus(e)
+  }
+}
+
+final case class LicenseKey(value: String) extends AnyVal
+
 final case class FlutterbyConfig(
     classLoader: ClassLoader,
     dataSource: Option[DataSource],
@@ -259,7 +344,16 @@ final case class FlutterbyConfig(
     mixed: `MixedTransactionAllowed?`,
     group: `GroupTransactions?`,
     installedBy: Option[InstalledBy],
-    dryRunOutput: Option[DryRunOutput]
+    dryRunOutput: Option[DryRunOutput],
+    connectRetries: ConnectionRetries,
+    initSql: Option[InitSql],
+    ignoreIgnoredMigrations: `IgnoreIgnoredMigrations?`,
+    ignorePendingMigrations: `IgnorePendingMigrations?`,
+    errorOverrides: ErrorOverrides,
+    stream: `ShouldStreamMigrations?`,
+    batch: `ShouldBatchSqlStatements?`,
+    oracleSqlplus: `EnableOracleSqlplusSupport?`,
+    licenseKey: Option[LicenseKey]
 )
 
 object FlutterbyConfig {
@@ -296,6 +390,15 @@ object FlutterbyConfig {
     val group                                    = `GroupTransactions?`.DoNotGroup
     val installedBy: Option[InstalledBy]         = None
     val dryRunOutput: Option[DryRunOutput]       = None
+    val connectionRetries                        = ConnectionRetries(0)
+    val initSql: Option[InitSql]                 = None
+    val ignoreIgnoredMigrations                  = `IgnoreIgnoredMigrations?`.ValidateIgnored
+    val ignorePendingMigrations                  = `IgnorePendingMigrations?`.ValidatePending
+    val errorOverrides                           = ErrorOverrides(Vector.empty)
+    val stream                                   = `ShouldStreamMigrations?`.DoNotStream
+    val batch                                    = `ShouldBatchSqlStatements?`.DoNotBatchSqlStatements
+    val oracleSqlplus                            = `EnableOracleSqlplusSupport?`.DoNotEnableSupport
+    val licenseKey: Option[LicenseKey]           = None
   }
 
   val defaultConfig = FlutterbyConfig(
@@ -330,7 +433,16 @@ object FlutterbyConfig {
     mixed = Defaults.mixed,
     group = Defaults.group,
     installedBy = Defaults.installedBy,
-    dryRunOutput = Defaults.dryRunOutput
+    dryRunOutput = Defaults.dryRunOutput,
+    connectRetries = Defaults.connectionRetries,
+    initSql = Defaults.initSql,
+    ignoreIgnoredMigrations = Defaults.ignoreIgnoredMigrations,
+    ignorePendingMigrations = Defaults.ignorePendingMigrations,
+    errorOverrides = Defaults.errorOverrides,
+    stream = Defaults.stream,
+    batch = Defaults.batch,
+    oracleSqlplus = Defaults.oracleSqlplus,
+    licenseKey = Defaults.licenseKey
   )
 
   def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration {
@@ -371,16 +483,15 @@ object FlutterbyConfig {
     override def getInstalledBy: String                                      = c.installedBy.map(_.value).orNull
     @silent("deprecated") override def getErrorHandlers: Array[ErrorHandler] = Array.empty
     override def getDryRunOutput: OutputStream                               = c.dryRunOutput.map(_.out).orNull
-
-    override def getConnectRetries: Int             = ??? //TODO: implement
-    override def getInitSql: String                 = ???
-    override def isIgnoreIgnoredMigrations: Boolean = ???
-    override def isIgnorePendingMigrations: Boolean = ???
-    override def getErrorOverrides: Array[String]   = ???
-    override def isStream: Boolean                  = ???
-    override def isBatch: Boolean                   = ???
-    override def isOracleSqlplus: Boolean           = ???
-    override def getLicenseKey: String              = ???
+    override def getConnectRetries: Int                                      = c.connectRetries.value
+    override def getInitSql: String                                          = c.initSql.map(_.value).orNull
+    override def isIgnoreIgnoredMigrations: Boolean                          = c.ignoreIgnoredMigrations.isIgnoreIgnoredMigrations
+    override def isIgnorePendingMigrations: Boolean                          = c.ignorePendingMigrations.isIgnorePendingMigrations
+    override def getErrorOverrides: Array[String]                            = c.errorOverrides.errorOverrides.map(_.value).toArray
+    override def isStream: Boolean                                           = c.stream.isStream
+    override def isBatch: Boolean                                            = c.batch.isBatch
+    override def isOracleSqlplus: Boolean                                    = c.oracleSqlplus.isOracleSqlplus
+    override def getLicenseKey: String                                       = c.licenseKey.map(_.value).orNull
   }
 
   def fromFlyway(c: FlywayConfiguration): FlutterbyConfig = {
