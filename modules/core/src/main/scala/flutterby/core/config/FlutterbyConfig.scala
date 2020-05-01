@@ -2,17 +2,17 @@ package flutterby.core.config
 
 import java.io.OutputStream
 import java.nio.charset.{ Charset, StandardCharsets }
-import java.util
 
-import com.github.ghik.silencer.silent
 import flutterby.core.jdk.CollectionConversions
 import flutterby.core.MigrationVersion
 import flutterby.core.resolver.{ FlutterbyMigrationResolver, MigrationResolvers }
 import javax.sql.DataSource
 import org.flywaydb.core.api
 import org.flywaydb.core.api.Location
-import org.flywaydb.core.api.configuration.{ Configuration => FlywayConfiguration }
-import org.flywaydb.core.api.errorhandler.ErrorHandler
+import org.flywaydb.core.api.configuration.{ FluentConfiguration, Configuration => FlywayConfiguration }
+import org.flywaydb.core.internal.license.FlywayProUpgradeRequiredException
+
+import scala.util.Try
 
 final case class BaselineVersion(version: MigrationVersion)
 
@@ -114,6 +114,10 @@ object `AllowOutOfOrder?` {
   def isOutOfOrder(a: `AllowOutOfOrder?`): Boolean = a match {
     case Allowed    => true
     case DoNotAllow => false
+  }
+
+  implicit class `AllowOutOfOrder?Ops`(val a: `AllowOutOfOrder?`) extends AnyVal {
+    def isOutOfOrder: Boolean = `AllowOutOfOrder?`.isOutOfOrder(a)
   }
 }
 
@@ -445,53 +449,57 @@ object FlutterbyConfig {
     licenseKey = Defaults.licenseKey
   )
 
-  def toFlyway(c: FlutterbyConfig): FlywayConfiguration = new FlywayConfiguration {
-    override def getClassLoader: ClassLoader              = c.classLoader
-    override def getDataSource: DataSource                = c.dataSource.orNull
-    override def getBaselineVersion: api.MigrationVersion = c.baselineVersion.version.toFlyway
-    override def getBaselineDescription: String           = c.baselineDescription.value
-    override def getResolvers: Array[api.resolver.MigrationResolver] =
-      c.resolvers.resolvers.map(r => FlutterbyMigrationResolver.toFlyway(r, c)).toArray
-    override def isSkipDefaultResolvers: Boolean            = c.skipDefaultResolvers.isSkipDefaultResolvers
-    override def getCallbacks: Array[api.callback.Callback] = Array.empty //TODO: address
-    override def isSkipDefaultCallbacks: Boolean            = c.skipDefaultCallbacks.isSkipDefaultCallbacks
-    override def getSqlMigrationPrefix: String              = c.sqlMigrationPrefix.value
-    override def getUndoSqlMigrationPrefix: String          = c.undoSqlMigrationPrefix.value
-    override def getRepeatableSqlMigrationPrefix: String    = c.repeatableSqlMigrationPrefix.value
-    override def getSqlMigrationSeparator: String           = c.sqlMigrationSeparator.value
-    override def getSqlMigrationSuffixes: Array[String] =
-      c.sqlMigrationSuffixes.sqlMigrationSuffixes.map(_.value).toArray
-    override def isPlaceholderReplacement: Boolean = c.placeholderReplacement.isPlaceholderReplacement
-    override def getPlaceholderSuffix: String      = c.placeholderSuffix.value
-    override def getPlaceholderPrefix: String      = c.placeholderPrefix.value
-    override def getPlaceholders: util.Map[String, String] =
-      CollectionConversions.toJavaMap(c.placeholders.placeholders)
-    override def getTarget: api.MigrationVersion                             = c.target.map(t => MigrationVersion.toFlyway(t.target)).orNull
-    override def getTable: String                                            = c.table.value
-    override def getSchemas: Array[String]                                   = c.schemas.schemas.toArray
-    override def getEncoding: Charset                                        = c.encoding.value
-    override def getLocations: Array[Location]                               = c.locations.locations.toArray //TODO: address
-    override def isBaselineOnMigrate: Boolean                                = c.baselineOnMigrate.isBaselineOnMigrate
-    override def isOutOfOrder: Boolean                                       = `AllowOutOfOrder?`.isOutOfOrder(c.outOfOrder)
-    override def isIgnoreMissingMigrations: Boolean                          = c.ignoreMissingMigrations.isIgnoreMissingMigrations
-    override def isIgnoreFutureMigrations: Boolean                           = c.ignoreFutureMigrations.isIgnoreFutureMigrations
-    override def isValidateOnMigrate: Boolean                                = c.validateOnMigrate.isValidateOnMigrate
-    override def isCleanOnValidationError: Boolean                           = c.cleanOnValidationError.isCleanOnValidationError
-    override def isCleanDisabled: Boolean                                    = c.clean.isCleanDisabled
-    override def isMixed: Boolean                                            = c.mixed.isMixed
-    override def isGroup: Boolean                                            = c.group.isGroup
-    override def getInstalledBy: String                                      = c.installedBy.map(_.value).orNull
-    @silent("deprecated") override def getErrorHandlers: Array[ErrorHandler] = Array.empty
-    override def getDryRunOutput: OutputStream                               = c.dryRunOutput.map(_.out).orNull
-    override def getConnectRetries: Int                                      = c.connectRetries.value
-    override def getInitSql: String                                          = c.initSql.map(_.value).orNull
-    override def isIgnoreIgnoredMigrations: Boolean                          = c.ignoreIgnoredMigrations.isIgnoreIgnoredMigrations
-    override def isIgnorePendingMigrations: Boolean                          = c.ignorePendingMigrations.isIgnorePendingMigrations
-    override def getErrorOverrides: Array[String]                            = c.errorOverrides.errorOverrides.map(_.value).toArray
-    override def isStream: Boolean                                           = c.stream.isStream
-    override def isBatch: Boolean                                            = c.batch.isBatch
-    override def isOracleSqlplus: Boolean                                    = c.oracleSqlplus.isOracleSqlplus
-    override def getLicenseKey: String                                       = c.licenseKey.map(_.value).orNull
+  def toFlyway(c: FlutterbyConfig): FlywayConfiguration = {
+    val communityConfig = new FluentConfiguration(c.classLoader)
+      .dataSource(c.dataSource.orNull)
+      .baselineVersion(c.baselineVersion.version.toFlyway)
+      .baselineDescription(c.baselineDescription.value)
+      .resolvers(c.resolvers.resolvers.map(r => FlutterbyMigrationResolver.toFlyway(r, c)): _*)
+      .skipDefaultResolvers(c.skipDefaultResolvers.isSkipDefaultResolvers)
+      .callbacks(Array.empty[api.callback.Callback]: _*) //TODO: address
+      .skipDefaultCallbacks(c.skipDefaultCallbacks.isSkipDefaultCallbacks)
+      .sqlMigrationPrefix(c.sqlMigrationPrefix.value)
+      .repeatableSqlMigrationPrefix(c.repeatableSqlMigrationPrefix.value)
+      .sqlMigrationSeparator(c.sqlMigrationSeparator.value)
+      .sqlMigrationSuffixes(c.sqlMigrationSuffixes.sqlMigrationSuffixes.map(_.value): _*)
+      .placeholderReplacement(c.placeholderReplacement.isPlaceholderReplacement)
+      .placeholderSuffix(c.placeholderSuffix.value)
+      .placeholderPrefix(c.placeholderPrefix.value)
+      .placeholders(CollectionConversions.toJavaMap(c.placeholders.placeholders))
+      .target(c.target.map(t => MigrationVersion.toFlyway(t.target)).orNull)
+      .table(c.table.value)
+      .schemas(c.schemas.schemas: _*)
+      .encoding(c.encoding.value)
+      .locations(c.locations.locations: _*) //TODO: address
+      .baselineOnMigrate(c.baselineOnMigrate.isBaselineOnMigrate)
+      .outOfOrder(c.outOfOrder.isOutOfOrder)
+      .ignoreMissingMigrations(c.ignoreMissingMigrations.isIgnoreMissingMigrations)
+      .ignoreFutureMigrations(c.ignoreFutureMigrations.isIgnoreFutureMigrations)
+      .validateOnMigrate(c.validateOnMigrate.isValidateOnMigrate)
+      .cleanOnValidationError(c.cleanOnValidationError.isCleanOnValidationError)
+      .cleanDisabled(c.clean.isCleanDisabled)
+      .mixed(c.mixed.isMixed)
+      .group(c.group.isGroup)
+      .installedBy(c.installedBy.map(_.value).orNull)
+      .connectRetries(c.connectRetries.value)
+      .initSql(c.initSql.map(_.value).orNull)
+      .ignoreIgnoredMigrations(c.ignoreIgnoredMigrations.isIgnoreIgnoredMigrations)
+      .ignorePendingMigrations(c.ignorePendingMigrations.isIgnorePendingMigrations)
+
+    val proEnterpriseConfig = Try {
+      communityConfig
+        .undoSqlMigrationPrefix(c.undoSqlMigrationPrefix.value)
+        .dryRunOutput(c.dryRunOutput.map(_.out).orNull)
+        .errorOverrides(c.errorOverrides.errorOverrides.map(_.value): _*)
+        .stream(c.stream.isStream)
+        .batch(c.batch.isBatch)
+        .oracleSqlplus(c.oracleSqlplus.isOracleSqlplus)
+        .licenseKey(c.licenseKey.map(_.value).orNull)
+    }.recover {
+      case _: FlywayProUpgradeRequiredException => communityConfig
+    }
+
+    proEnterpriseConfig.get
   }
 
   def fromFlyway(c: FlywayConfiguration): FlutterbyConfig = {
