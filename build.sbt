@@ -28,18 +28,20 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val `flutterby` =
+lazy val `flutterby`    =
   (project in file("."))
     .aggregate(`flutterby-core`, `flutterby-cats_1_x`)
 
-lazy val `flutterby-core` = project
+lazy val `flutterby-core`     = project
   .in(file("modules/core"))
   .settings(name := "flutterby-core")
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= Seq(
-    compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerV cross CrossVersion.full),
-    "com.github.ghik" % "silencer-lib" % silencerV % Provided cross CrossVersion.full
-  ))
+  .settings(
+    libraryDependencies ++= Seq(
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerV cross CrossVersion.full),
+      "com.github.ghik" % "silencer-lib" % silencerV % Provided cross CrossVersion.full
+    )
+  )
   .settings(crossScalaVersions := Seq(scala2_12V, scala2_13V))
 
 lazy val `flutterby-cats_1_x` = project

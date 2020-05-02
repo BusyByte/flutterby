@@ -1,6 +1,6 @@
 package flutterby.core
 
-import org.flywaydb.core.api.{ MigrationVersion => FlywayMigrationVersion }
+import org.flywaydb.core.api.{MigrationVersion => FlywayMigrationVersion}
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 

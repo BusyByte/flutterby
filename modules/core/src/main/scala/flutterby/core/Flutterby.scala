@@ -12,7 +12,7 @@ import org.flywaydb.core.api.{
 import scala.concurrent.duration.FiniteDuration
 
 final case class SuccessfullyAppliedMigrationCount(value: Int) extends AnyVal
-final case class SuccessfullyUndoneMigrationCount(value: Int) extends AnyVal
+final case class SuccessfullyUndoneMigrationCount(value: Int)  extends AnyVal
 
 trait Flutterby[F[_]] {
   def baseline(): F[Unit]
@@ -34,20 +34,20 @@ trait MigrationInfoService[F[_]] {
 final case class DisplayName(value: String) extends AnyVal
 
 sealed trait `IsResoved?`
-object `IsResoved?` {
+object `IsResoved?`   {
   case object YesResolved extends `IsResoved?`
   case object NotResolved extends `IsResoved?`
 }
 
 sealed trait `IsApplied?`
-object `IsApplied?` {
+object `IsApplied?`   {
   case object YesApplied extends `IsApplied?`
   case object NotApplied extends `IsApplied?`
 }
 
 sealed trait `Failed?`
-object `Failed?` {
-  case object YesFailed extends `Failed?`
+object `Failed?`      {
+  case object YesFailed  extends `Failed?`
   case object Successful extends `Failed?`
 }
 sealed abstract class MigrationState(
@@ -172,42 +172,43 @@ object MigrationState { //TODO: enumeratum
         `Failed?`.Successful
       )
 
-  def fromFlyway(f: FlywayMigrationState): MigrationState = f match {
-    case FlywayMigrationState.PENDING         => PENDING
-    case FlywayMigrationState.ABOVE_TARGET    => ABOVE_TARGET
-    case FlywayMigrationState.BELOW_BASELINE  => BELOW_BASELINE
-    case FlywayMigrationState.BASELINE        => BASELINE
-    case FlywayMigrationState.IGNORED         => IGNORED
-    case FlywayMigrationState.MISSING_SUCCESS => MISSING_SUCCESS
-    case FlywayMigrationState.MISSING_FAILED  => MISSING_FAILED
-    case FlywayMigrationState.SUCCESS         => SUCCESS
-    case FlywayMigrationState.UNDONE          => UNDONE
-    case FlywayMigrationState.AVAILABLE       => AVAILABLE
-    case FlywayMigrationState.FAILED          => FAILED
-    case FlywayMigrationState.OUT_OF_ORDER    => OUT_OF_ORDER
-    case FlywayMigrationState.FUTURE_SUCCESS  => FUTURE_SUCCESS
-    case FlywayMigrationState.FUTURE_FAILED   => FUTURE_FAILED
-    case FlywayMigrationState.OUTDATED        => OUTDATED
-    case FlywayMigrationState.SUPERSEDED      => SUPERSEDED
-  }
+  def fromFlyway(f: FlywayMigrationState): MigrationState =
+    f match {
+      case FlywayMigrationState.PENDING         => PENDING
+      case FlywayMigrationState.ABOVE_TARGET    => ABOVE_TARGET
+      case FlywayMigrationState.BELOW_BASELINE  => BELOW_BASELINE
+      case FlywayMigrationState.BASELINE        => BASELINE
+      case FlywayMigrationState.IGNORED         => IGNORED
+      case FlywayMigrationState.MISSING_SUCCESS => MISSING_SUCCESS
+      case FlywayMigrationState.MISSING_FAILED  => MISSING_FAILED
+      case FlywayMigrationState.SUCCESS         => SUCCESS
+      case FlywayMigrationState.UNDONE          => UNDONE
+      case FlywayMigrationState.AVAILABLE       => AVAILABLE
+      case FlywayMigrationState.FAILED          => FAILED
+      case FlywayMigrationState.OUT_OF_ORDER    => OUT_OF_ORDER
+      case FlywayMigrationState.FUTURE_SUCCESS  => FUTURE_SUCCESS
+      case FlywayMigrationState.FUTURE_FAILED   => FUTURE_FAILED
+      case FlywayMigrationState.OUTDATED        => OUTDATED
+      case FlywayMigrationState.SUPERSEDED      => SUPERSEDED
+    }
 }
 
-final case class Checksum(value: Int) extends AnyVal
+final case class Checksum(value: Int)       extends AnyVal
 final case class Description(value: String) extends AnyVal
-final case class Script(value: String) extends AnyVal
+final case class Script(value: String)      extends AnyVal
 final case class InstalledOn(value: Instant)
 final case class InstalledBy(value: String) extends AnyVal
-final case class InstalledRank(value: Int) extends AnyVal
+final case class InstalledRank(value: Int)  extends AnyVal
 final case class ExecutionTime(value: FiniteDuration)
 
 sealed trait `IsSynthetic?`
-object `IsSynthetic?` {
+object `IsSynthetic?`   {
   case object Synthetic extends `IsSynthetic?`
-  case object Real extends `IsSynthetic?`
+  case object Real      extends `IsSynthetic?`
 }
 
 sealed trait `IsUndo?`
-object `IsUndo?` {
+object `IsUndo?`        {
   case object YesUndo extends `IsUndo?`
   case object NotUndo extends `IsUndo?`
 }
@@ -215,49 +216,51 @@ sealed abstract class MigrationType(
     val synthetic: `IsSynthetic?`,
     val undo: `IsUndo?`
 )
-object MigrationType {
-  case object SCHEMA extends MigrationType(`IsSynthetic?`.Synthetic, `IsUndo?`.NotUndo)
-  case object BASELINE extends MigrationType(`IsSynthetic?`.Synthetic, `IsUndo?`.NotUndo)
-  case object SQL extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
-  case object UNDO_SQL extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.YesUndo)
-  case object JDBC extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
-  case object UNDO_JDBC extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.YesUndo)
-  case object SPRING_JDBC extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
+object MigrationType    {
+  case object SCHEMA           extends MigrationType(`IsSynthetic?`.Synthetic, `IsUndo?`.NotUndo)
+  case object BASELINE         extends MigrationType(`IsSynthetic?`.Synthetic, `IsUndo?`.NotUndo)
+  case object SQL              extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
+  case object UNDO_SQL         extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.YesUndo)
+  case object JDBC             extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
+  case object UNDO_JDBC        extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.YesUndo)
+  case object SPRING_JDBC      extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
   case object UNDO_SPRING_JDBC extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.YesUndo)
-  case object CUSTOM extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
-  case object UNDO_CUSTOM extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.YesUndo)
+  case object CUSTOM           extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.NotUndo)
+  case object UNDO_CUSTOM      extends MigrationType(`IsSynthetic?`.Real, `IsUndo?`.YesUndo)
 
-  def fromFlyway(f: FlywayMigrationType): MigrationType = f match {
-    case FlywayMigrationType.SCHEMA           => SCHEMA
-    case FlywayMigrationType.BASELINE         => BASELINE
-    case FlywayMigrationType.SQL              => SQL
-    case FlywayMigrationType.UNDO_SQL         => UNDO_SQL
-    case FlywayMigrationType.JDBC             => JDBC
-    case FlywayMigrationType.UNDO_JDBC        => UNDO_JDBC
-    case FlywayMigrationType.SPRING_JDBC      => SPRING_JDBC
-    case FlywayMigrationType.UNDO_SPRING_JDBC => UNDO_SPRING_JDBC
-    case FlywayMigrationType.CUSTOM           => CUSTOM
-    case FlywayMigrationType.UNDO_CUSTOM      => UNDO_CUSTOM
-  }
+  def fromFlyway(f: FlywayMigrationType): MigrationType =
+    f match {
+      case FlywayMigrationType.SCHEMA           => SCHEMA
+      case FlywayMigrationType.BASELINE         => BASELINE
+      case FlywayMigrationType.SQL              => SQL
+      case FlywayMigrationType.UNDO_SQL         => UNDO_SQL
+      case FlywayMigrationType.JDBC             => JDBC
+      case FlywayMigrationType.UNDO_JDBC        => UNDO_JDBC
+      case FlywayMigrationType.SPRING_JDBC      => SPRING_JDBC
+      case FlywayMigrationType.UNDO_SPRING_JDBC => UNDO_SPRING_JDBC
+      case FlywayMigrationType.CUSTOM           => CUSTOM
+      case FlywayMigrationType.UNDO_CUSTOM      => UNDO_CUSTOM
+    }
 
-  def toFlyway(m: MigrationType): FlywayMigrationType = m match {
-    case SCHEMA           => FlywayMigrationType.SCHEMA
-    case BASELINE         => FlywayMigrationType.BASELINE
-    case SQL              => FlywayMigrationType.SQL
-    case UNDO_SQL         => FlywayMigrationType.UNDO_SQL
-    case JDBC             => FlywayMigrationType.JDBC
-    case UNDO_JDBC        => FlywayMigrationType.UNDO_JDBC
-    case SPRING_JDBC      => FlywayMigrationType.SPRING_JDBC
-    case UNDO_SPRING_JDBC => FlywayMigrationType.UNDO_SPRING_JDBC
-    case CUSTOM           => FlywayMigrationType.CUSTOM
-    case UNDO_CUSTOM      => FlywayMigrationType.UNDO_CUSTOM
-  }
+  def toFlyway(m: MigrationType): FlywayMigrationType   =
+    m match {
+      case SCHEMA           => FlywayMigrationType.SCHEMA
+      case BASELINE         => FlywayMigrationType.BASELINE
+      case SQL              => FlywayMigrationType.SQL
+      case UNDO_SQL         => FlywayMigrationType.UNDO_SQL
+      case JDBC             => FlywayMigrationType.JDBC
+      case UNDO_JDBC        => FlywayMigrationType.UNDO_JDBC
+      case SPRING_JDBC      => FlywayMigrationType.SPRING_JDBC
+      case UNDO_SPRING_JDBC => FlywayMigrationType.UNDO_SPRING_JDBC
+      case CUSTOM           => FlywayMigrationType.CUSTOM
+      case UNDO_CUSTOM      => FlywayMigrationType.UNDO_CUSTOM
+    }
 }
 final case class DisplayText(value: String) extends AnyVal
 final case class Version(value: String)
 final case class MigrationVersion(version: Option[Version], displayText: DisplayText)
 object MigrationVersion {
-  val EMPTY = MigrationVersion(
+  val EMPTY  = MigrationVersion(
     version = None,
     displayText = DisplayText("<< Empty Schema >>")
   )
@@ -266,7 +269,7 @@ object MigrationVersion {
     displayText = DisplayText("<< Latest Version >>")
   )
 
-  val CURRENT = {
+  val CURRENT                                                      = {
     val currentVersionDisplayText = "<< Current Version >>"
     MigrationVersion(
       version = Some(Version(currentVersionDisplayText)),
@@ -274,26 +277,29 @@ object MigrationVersion {
     )
   }
 
-  def fromVersionString(version: Option[String]): MigrationVersion = version match {
-    case None                                           => EMPTY
-    case Some(v) if "current".equalsIgnoreCase(v)       => CURRENT
-    case Some(v) if LATEST.version.exists(_.value == v) => LATEST
-    case Some(v)                                        => MigrationVersion(Some(Version(v)), DisplayText(v))
-  }
+  def fromVersionString(version: Option[String]): MigrationVersion =
+    version match {
+      case None                                           => EMPTY
+      case Some(v) if "current".equalsIgnoreCase(v)       => CURRENT
+      case Some(v) if LATEST.version.exists(_.value == v) => LATEST
+      case Some(v)                                        => MigrationVersion(Some(Version(v)), DisplayText(v))
+    }
 
-  def fromFlyway(f: FlywayMigrationVersion): MigrationVersion = f match {
-    case FlywayMigrationVersion.EMPTY   => EMPTY
-    case FlywayMigrationVersion.LATEST  => LATEST
-    case FlywayMigrationVersion.CURRENT => CURRENT
-    case other                          => fromVersionString(Some(other.toString))
-  }
+  def fromFlyway(f: FlywayMigrationVersion): MigrationVersion      =
+    f match {
+      case FlywayMigrationVersion.EMPTY   => EMPTY
+      case FlywayMigrationVersion.LATEST  => LATEST
+      case FlywayMigrationVersion.CURRENT => CURRENT
+      case other                          => fromVersionString(Some(other.toString))
+    }
 
-  def toFlyway(m: MigrationVersion): FlywayMigrationVersion = m match {
-    case EMPTY                               => FlywayMigrationVersion.EMPTY
-    case LATEST                              => FlywayMigrationVersion.LATEST
-    case CURRENT                             => FlywayMigrationVersion.CURRENT
-    case MigrationVersion(_, DisplayText(d)) => FlywayMigrationVersion.fromVersion(d)
-  }
+  def toFlyway(m: MigrationVersion): FlywayMigrationVersion        =
+    m match {
+      case EMPTY                               => FlywayMigrationVersion.EMPTY
+      case LATEST                              => FlywayMigrationVersion.LATEST
+      case CURRENT                             => FlywayMigrationVersion.CURRENT
+      case MigrationVersion(_, DisplayText(d)) => FlywayMigrationVersion.fromVersion(d)
+    }
 
   implicit class MigrationVersionOps(val m: MigrationVersion) extends AnyVal {
     def toFlyway: FlywayMigrationVersion = MigrationVersion.toFlyway(m)
@@ -312,18 +318,37 @@ final case class MigrationInfo(
     installedRank: Option[InstalledRank],
     executionTime: Option[ExecutionTime]
 )
-object MigrationInfo {
+object MigrationInfo    {
   import scala.concurrent.duration._
-  def fromFlyway(m: FlywayMigrationInfo): MigrationInfo = MigrationInfo(
-    `type` = MigrationType.fromFlyway(m.getType),
-    checksum = Checksum(m.getChecksum),
-    version = MigrationVersion.fromFlyway(m.getVersion),
-    description = Description(m.getDescription),
-    script = Script(m.getScript),
-    state = MigrationState.fromFlyway(m.getState),
-    installedOn = Option(m.getInstalledOn).map(d => InstalledOn(d.toInstant)),
-    installedBy = Option(m.getInstalledBy).map(InstalledBy.apply),
-    installedRank = Option(m.getInstalledRank).map(r => InstalledRank(r.intValue())),
-    executionTime = Option(m.getExecutionTime).map(e => ExecutionTime(e.intValue().millis))
-  )
+  def fromFlyway(m: FlywayMigrationInfo): MigrationInfo =
+    MigrationInfo(
+      `type` = MigrationType.fromFlyway(m.getType),
+      checksum = Checksum(m.getChecksum),
+      version = MigrationVersion.fromFlyway(m.getVersion),
+      description = Description(m.getDescription),
+      script = Script(m.getScript),
+      state = MigrationState.fromFlyway(m.getState),
+      installedOn = Option(m.getInstalledOn).map(d => InstalledOn(d.toInstant)),
+      installedBy = Option(m.getInstalledBy).map(InstalledBy.apply),
+      installedRank = Option(m.getInstalledRank).map(r => InstalledRank(r.intValue())),
+      executionTime = Option(m.getExecutionTime).map(e => ExecutionTime(e.intValue().millis))
+    )
+}
+
+import org.flywaydb.core.api.{Location => FlywayLocation}
+final case class Descriptor(value: String)  extends AnyVal
+sealed trait Location   {
+  def descriptor: Descriptor
+}
+object Location         {
+  final case class ClassPath(descriptor: Descriptor)  extends Location // TODO: would think could use a macro
+  final case class FileSystem(descriptor: Descriptor) extends Location // TODO: would think could use a macro
+  final case class Dynamic(descriptor: Descriptor)    extends Location
+
+  def toFlyway(l: Location): FlywayLocation = new FlywayLocation(l.descriptor.value)
+}
+
+final case class Locations(locations: Vector[Location])
+object Locations        {
+  def apply(args: Location*): Locations = Locations(args.toVector)
 }

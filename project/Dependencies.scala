@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 
-  object Versions {
+  object Versions  {
     val catsEffect_1_x = "1.4.0"
     val catsEffect_2_x = "2.1.3"
 
@@ -16,7 +16,7 @@ object Dependencies {
   }
 
   object Libraries {
-    lazy val flyway         = "org.flywaydb"  % "flyway-core"  % Versions.flyway
+    lazy val flyway         = "org.flywaydb"   % "flyway-core" % Versions.flyway
     lazy val catsEffect_1_x = "org.typelevel" %% "cats-effect" % Versions.catsEffect_1_x
     lazy val catsEffect_2_x = "org.typelevel" %% "cats-effect" % Versions.catsEffect_2_x
 

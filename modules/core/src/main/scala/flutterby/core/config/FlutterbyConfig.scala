@@ -1,15 +1,15 @@
 package flutterby.core.config
 
 import java.io.OutputStream
-import java.nio.charset.{ Charset, StandardCharsets }
+import java.nio.charset.{Charset, StandardCharsets}
 
+import flutterby.core.Location.ClassPath
 import flutterby.core.jdk.CollectionConversions
-import flutterby.core.MigrationVersion
-import flutterby.core.resolver.{ FlutterbyMigrationResolver, MigrationResolvers }
+import flutterby.core.{Descriptor, Location, Locations, MigrationVersion}
+import flutterby.core.callback.{Callback, Callbacks}
+import flutterby.core.resolver.{FlutterbyMigrationResolver, MigrationResolvers}
 import javax.sql.DataSource
-import org.flywaydb.core.api
-import org.flywaydb.core.api.Location
-import org.flywaydb.core.api.configuration.{ FluentConfiguration, Configuration => FlywayConfiguration }
+import org.flywaydb.core.api.configuration.{FluentConfiguration, Configuration => FWConfiguration}
 import org.flywaydb.core.internal.license.FlywayProUpgradeRequiredException
 
 import scala.util.Try
@@ -19,14 +19,15 @@ final case class BaselineVersion(version: MigrationVersion)
 final case class BaselineDescription(value: String) extends AnyVal
 
 sealed trait `SkipDefaultResolvers?`
-object `SkipDefaultResolvers?` {
+object `SkipDefaultResolvers?`         {
   case object SkipDefaultResolvers extends `SkipDefaultResolvers?`
-  case object UseDefaultResolvers extends `SkipDefaultResolvers?`
+  case object UseDefaultResolvers  extends `SkipDefaultResolvers?`
 
-  def isSkipDefaultResolvers(s: `SkipDefaultResolvers?`): Boolean = s match {
-    case SkipDefaultResolvers => true
-    case UseDefaultResolvers  => false
-  }
+  def isSkipDefaultResolvers(s: `SkipDefaultResolvers?`): Boolean =
+    s match {
+      case SkipDefaultResolvers => true
+      case UseDefaultResolvers  => false
+    }
 
   implicit class `SkipDefaultResolvers?Ops`(val s: `SkipDefaultResolvers?`) extends AnyVal {
     def isSkipDefaultResolvers: Boolean = `SkipDefaultResolvers?`.isSkipDefaultResolvers(s)
@@ -34,14 +35,15 @@ object `SkipDefaultResolvers?` {
 }
 
 sealed trait `SkipDefaultCallbacks?`
-object `SkipDefaultCallbacks?` {
+object `SkipDefaultCallbacks?`         {
   case object SkipDefaultCallbacks extends `SkipDefaultCallbacks?`
-  case object UseDefaultCallbacks extends `SkipDefaultCallbacks?`
+  case object UseDefaultCallbacks  extends `SkipDefaultCallbacks?`
 
-  def isSkipDefaultCallbacks(s: `SkipDefaultCallbacks?`): Boolean = s match {
-    case SkipDefaultCallbacks => true
-    case UseDefaultCallbacks  => false
-  }
+  def isSkipDefaultCallbacks(s: `SkipDefaultCallbacks?`): Boolean =
+    s match {
+      case SkipDefaultCallbacks => true
+      case UseDefaultCallbacks  => false
+    }
 
   implicit class `SkipDefaultCallbacks?Ops`(val s: `SkipDefaultCallbacks?`) extends AnyVal {
     def isSkipDefaultCallbacks: Boolean = `SkipDefaultCallbacks?`.isSkipDefaultCallbacks(s)
@@ -59,16 +61,20 @@ final case class SqlMigrationSeparator(value: String) extends AnyVal
 final case class SqlMigrationSufix(value: String) extends AnyVal
 
 final case class SqlMigrationSuffixes(sqlMigrationSuffixes: Vector[SqlMigrationSufix])
+object SqlMigrationSuffixes            {
+  def apply(args: SqlMigrationSufix*): SqlMigrationSuffixes = SqlMigrationSuffixes(args.toVector)
+}
 
 sealed trait `ReplacePlaceholders?`
-object `ReplacePlaceholders?` {
-  case object ReplacePlaceholders extends `ReplacePlaceholders?`
+object `ReplacePlaceholders?`          {
+  case object ReplacePlaceholders      extends `ReplacePlaceholders?`
   case object DoNotReplacePlaceholders extends `ReplacePlaceholders?`
 
-  def isPlaceholderReplacement(r: `ReplacePlaceholders?`): Boolean = r match {
-    case ReplacePlaceholders      => true
-    case DoNotReplacePlaceholders => false
-  }
+  def isPlaceholderReplacement(r: `ReplacePlaceholders?`): Boolean =
+    r match {
+      case ReplacePlaceholders      => true
+      case DoNotReplacePlaceholders => false
+    }
 
   implicit class `ReplacePlaceholders?Ops`(val r: `ReplacePlaceholders?`) extends AnyVal {
     def isPlaceholderReplacement: Boolean = `ReplacePlaceholders?`.isPlaceholderReplacement(r)
@@ -89,17 +95,16 @@ final case class Schemas(schemas: Vector[String])
 
 final case class SqlMigrationEncoding(value: Charset)
 
-final case class MigrationLocations(locations: Vector[Location])
-
 sealed trait `BaselineOnMigrate?`
-object `BaselineOnMigrate?` {
-  case object Baseline extends `BaselineOnMigrate?`
+object `BaselineOnMigrate?`            {
+  case object Baseline      extends `BaselineOnMigrate?`
   case object DoNotBaseline extends `BaselineOnMigrate?`
 
-  def isBaselineOnMigrate(b: `BaselineOnMigrate?`): Boolean = b match {
-    case Baseline      => true
-    case DoNotBaseline => false
-  }
+  def isBaselineOnMigrate(b: `BaselineOnMigrate?`): Boolean =
+    b match {
+      case Baseline      => true
+      case DoNotBaseline => false
+    }
 
   implicit class `BaselineOnMigrate?Ops`(val b: `BaselineOnMigrate?`) extends AnyVal {
     def isBaselineOnMigrate: Boolean = `BaselineOnMigrate?`.isBaselineOnMigrate(b)
@@ -107,14 +112,15 @@ object `BaselineOnMigrate?` {
 }
 
 sealed trait `AllowOutOfOrder?`
-object `AllowOutOfOrder?` {
-  case object Allowed extends `AllowOutOfOrder?`
+object `AllowOutOfOrder?`              {
+  case object Allowed    extends `AllowOutOfOrder?`
   case object DoNotAllow extends `AllowOutOfOrder?`
 
-  def isOutOfOrder(a: `AllowOutOfOrder?`): Boolean = a match {
-    case Allowed    => true
-    case DoNotAllow => false
-  }
+  def isOutOfOrder(a: `AllowOutOfOrder?`): Boolean =
+    a match {
+      case Allowed    => true
+      case DoNotAllow => false
+    }
 
   implicit class `AllowOutOfOrder?Ops`(val a: `AllowOutOfOrder?`) extends AnyVal {
     def isOutOfOrder: Boolean = `AllowOutOfOrder?`.isOutOfOrder(a)
@@ -122,14 +128,15 @@ object `AllowOutOfOrder?` {
 }
 
 sealed trait `IgnoreMissingMigrations?`
-object `IgnoreMissingMigrations?` {
-  case object Ignore extends `IgnoreMissingMigrations?`
+object `IgnoreMissingMigrations?`      {
+  case object Ignore      extends `IgnoreMissingMigrations?`
   case object DoNotIgnore extends `IgnoreMissingMigrations?`
 
-  def isIgnoreMissingMigrations(i: `IgnoreMissingMigrations?`): Boolean = i match {
-    case Ignore      => true
-    case DoNotIgnore => false
-  }
+  def isIgnoreMissingMigrations(i: `IgnoreMissingMigrations?`): Boolean =
+    i match {
+      case Ignore      => true
+      case DoNotIgnore => false
+    }
 
   implicit class `IgnoreMissingMigrations?Ops`(val i: `IgnoreMissingMigrations?`) extends AnyVal {
     def isIgnoreMissingMigrations: Boolean = `IgnoreMissingMigrations?`.isIgnoreMissingMigrations(i)
@@ -137,14 +144,15 @@ object `IgnoreMissingMigrations?` {
 }
 
 sealed trait `IgnoreFutureMigrations?`
-object `IgnoreFutureMigrations?` {
-  case object Ignore extends `IgnoreFutureMigrations?`
+object `IgnoreFutureMigrations?`       {
+  case object Ignore      extends `IgnoreFutureMigrations?`
   case object DoNotIgnore extends `IgnoreFutureMigrations?`
 
-  def isIgnoreFutureMigrations(i: `IgnoreFutureMigrations?`): Boolean = i match {
-    case Ignore      => true
-    case DoNotIgnore => false
-  }
+  def isIgnoreFutureMigrations(i: `IgnoreFutureMigrations?`): Boolean =
+    i match {
+      case Ignore      => true
+      case DoNotIgnore => false
+    }
 
   implicit class `IgnoreFutureMigrations?Ops`(val i: `IgnoreFutureMigrations?`) extends AnyVal {
     def isIgnoreFutureMigrations: Boolean = `IgnoreFutureMigrations?`.isIgnoreFutureMigrations(i)
@@ -152,14 +160,15 @@ object `IgnoreFutureMigrations?` {
 }
 
 sealed trait `ValidateOnMigrate?`
-object `ValidateOnMigrate?` {
-  case object Validate extends `ValidateOnMigrate?`
+object `ValidateOnMigrate?`            {
+  case object Validate      extends `ValidateOnMigrate?`
   case object DoNotValidate extends `ValidateOnMigrate?`
 
-  def isValidateOnMigrate(v: `ValidateOnMigrate?`): Boolean = v match {
-    case Validate      => true
-    case DoNotValidate => false
-  }
+  def isValidateOnMigrate(v: `ValidateOnMigrate?`): Boolean =
+    v match {
+      case Validate      => true
+      case DoNotValidate => false
+    }
 
   implicit class `ValidateOnMigrate?Ops`(val v: `ValidateOnMigrate?`) extends AnyVal {
     def isValidateOnMigrate: Boolean = `ValidateOnMigrate?`.isValidateOnMigrate(v)
@@ -167,14 +176,15 @@ object `ValidateOnMigrate?` {
 }
 
 sealed trait `CleanOnValidationError?`
-object `CleanOnValidationError?` {
-  case object Clean extends `CleanOnValidationError?`
+object `CleanOnValidationError?`       {
+  case object Clean      extends `CleanOnValidationError?`
   case object DoNotClean extends `CleanOnValidationError?`
 
-  def isCleanOnValidationError(c: `CleanOnValidationError?`): Boolean = c match {
-    case Clean      => true
-    case DoNotClean => false
-  }
+  def isCleanOnValidationError(c: `CleanOnValidationError?`): Boolean =
+    c match {
+      case Clean      => true
+      case DoNotClean => false
+    }
 
   implicit class `CleanOnValidationError?Ops`(val c: `CleanOnValidationError?`) extends AnyVal {
     def isCleanOnValidationError: Boolean = `CleanOnValidationError?`.isCleanOnValidationError(c)
@@ -182,14 +192,15 @@ object `CleanOnValidationError?` {
 }
 
 sealed trait `CleanAllowed?`
-object `CleanAllowed?` {
-  case object CleanAllowed extends `CleanAllowed?`
+object `CleanAllowed?`                 {
+  case object CleanAllowed    extends `CleanAllowed?`
   case object DoNotAllowClean extends `CleanAllowed?`
 
-  def isCleanDisabled(c: `CleanAllowed?`): Boolean = c match {
-    case CleanAllowed    => false
-    case DoNotAllowClean => true
-  }
+  def isCleanDisabled(c: `CleanAllowed?`): Boolean =
+    c match {
+      case CleanAllowed    => false
+      case DoNotAllowClean => true
+    }
 
   implicit class `CleanAllowed?Ops`(val c: `CleanAllowed?`) extends AnyVal {
     def isCleanDisabled: Boolean = `CleanAllowed?`.isCleanDisabled(c)
@@ -197,14 +208,15 @@ object `CleanAllowed?` {
 }
 
 sealed trait `MixedTransactionAllowed?`
-object `MixedTransactionAllowed?` {
-  case object AllowMixed extends `MixedTransactionAllowed?`
+object `MixedTransactionAllowed?`      {
+  case object AllowMixed      extends `MixedTransactionAllowed?`
   case object DoNotAllowMixed extends `MixedTransactionAllowed?`
 
-  def isMixed(m: `MixedTransactionAllowed?`): Boolean = m match {
-    case AllowMixed      => true
-    case DoNotAllowMixed => false
-  }
+  def isMixed(m: `MixedTransactionAllowed?`): Boolean =
+    m match {
+      case AllowMixed      => true
+      case DoNotAllowMixed => false
+    }
 
   implicit class `MixedTransactionAllowed?Ops`(val m: `MixedTransactionAllowed?`) extends AnyVal {
     def isMixed: Boolean = `MixedTransactionAllowed?`.isMixed(m)
@@ -212,14 +224,15 @@ object `MixedTransactionAllowed?` {
 }
 
 sealed trait `GroupTransactions?`
-object `GroupTransactions?` {
-  case object Group extends `GroupTransactions?`
+object `GroupTransactions?`            {
+  case object Group      extends `GroupTransactions?`
   case object DoNotGroup extends `GroupTransactions?`
 
-  def isGroup(g: `GroupTransactions?`): Boolean = g match {
-    case Group      => true
-    case DoNotGroup => false
-  }
+  def isGroup(g: `GroupTransactions?`): Boolean =
+    g match {
+      case Group      => true
+      case DoNotGroup => false
+    }
 
   implicit class `GroupTransactions?Ops`(val g: `GroupTransactions?`) extends AnyVal {
     def isGroup: Boolean = `GroupTransactions?`.isGroup(g)
@@ -233,13 +246,14 @@ final case class DryRunOutput(out: OutputStream)
 
 sealed trait `IgnoreIgnoredMigrations?`
 case object `IgnoreIgnoredMigrations?` {
-  case object ValidateIgnored extends `IgnoreIgnoredMigrations?`
+  case object ValidateIgnored      extends `IgnoreIgnoredMigrations?`
   case object DoNotValidateIgnored extends `IgnoreIgnoredMigrations?`
 
-  def isIgnoreIgnoredMigrations(i: `IgnoreIgnoredMigrations?`): Boolean = i match {
-    case ValidateIgnored      => false
-    case DoNotValidateIgnored => true
-  }
+  def isIgnoreIgnoredMigrations(i: `IgnoreIgnoredMigrations?`): Boolean =
+    i match {
+      case ValidateIgnored      => false
+      case DoNotValidateIgnored => true
+    }
 
   implicit class `IgnoreIgnoredMigrations?Ops`(val i: `IgnoreIgnoredMigrations?`) extends AnyVal {
     def isIgnoreIgnoredMigrations: Boolean = `IgnoreIgnoredMigrations?`.isIgnoreIgnoredMigrations(i)
@@ -251,14 +265,15 @@ final case class ConnectionRetries(value: Int) extends AnyVal
 final case class InitSql(value: String) extends AnyVal
 
 sealed trait `IgnorePendingMigrations?`
-object `IgnorePendingMigrations?` {
-  case object ValidatePending extends `IgnorePendingMigrations?`
+object `IgnorePendingMigrations?`      {
+  case object ValidatePending      extends `IgnorePendingMigrations?`
   case object DoNotValidatePending extends `IgnorePendingMigrations?`
 
-  def isIgnorePendingMigrations(i: `IgnorePendingMigrations?`): Boolean = i match {
-    case ValidatePending      => false
-    case DoNotValidatePending => true
-  }
+  def isIgnorePendingMigrations(i: `IgnorePendingMigrations?`): Boolean =
+    i match {
+      case ValidatePending      => false
+      case DoNotValidatePending => true
+    }
 
   implicit class `IgnorePendingMigrations?Ops`(val i: `IgnorePendingMigrations?`) extends AnyVal {
     def isIgnorePendingMigrations: Boolean = `IgnorePendingMigrations?`.isIgnorePendingMigrations(i)
@@ -269,14 +284,15 @@ final case class ErrorOverride(value: String) extends AnyVal
 final case class ErrorOverrides(errorOverrides: Vector[ErrorOverride])
 
 sealed trait `ShouldStreamMigrations?`
-object `ShouldStreamMigrations?` {
-  case object Stream extends `ShouldStreamMigrations?`
+object `ShouldStreamMigrations?`       {
+  case object Stream      extends `ShouldStreamMigrations?`
   case object DoNotStream extends `ShouldStreamMigrations?`
 
-  def isStream(s: `ShouldStreamMigrations?`): Boolean = s match {
-    case Stream      => true
-    case DoNotStream => false
-  }
+  def isStream(s: `ShouldStreamMigrations?`): Boolean =
+    s match {
+      case Stream      => true
+      case DoNotStream => false
+    }
 
   implicit class `ShouldStreamMigrations?Ops`(val s: `ShouldStreamMigrations?`) extends AnyVal {
     def isStream: Boolean = `ShouldStreamMigrations?`.isStream(s)
@@ -285,14 +301,15 @@ object `ShouldStreamMigrations?` {
 }
 
 sealed trait `ShouldBatchSqlStatements?`
-object `ShouldBatchSqlStatements?` {
-  case object BatchSqlStatements extends `ShouldBatchSqlStatements?`
+object `ShouldBatchSqlStatements?`     {
+  case object BatchSqlStatements      extends `ShouldBatchSqlStatements?`
   case object DoNotBatchSqlStatements extends `ShouldBatchSqlStatements?`
 
-  def isBatch(s: `ShouldBatchSqlStatements?`): Boolean = s match {
-    case BatchSqlStatements      => true
-    case DoNotBatchSqlStatements => false
-  }
+  def isBatch(s: `ShouldBatchSqlStatements?`): Boolean =
+    s match {
+      case BatchSqlStatements      => true
+      case DoNotBatchSqlStatements => false
+    }
 
   implicit class `ShouldBatchSqlStatements?Ops`(val s: `ShouldBatchSqlStatements?`) extends AnyVal {
     def isBatch: Boolean = `ShouldBatchSqlStatements?`.isBatch(s)
@@ -300,14 +317,15 @@ object `ShouldBatchSqlStatements?` {
 }
 
 sealed trait `EnableOracleSqlplusSupport?`
-object `EnableOracleSqlplusSupport?` {
-  case object EnableSupport extends `EnableOracleSqlplusSupport?`
+object `EnableOracleSqlplusSupport?`   {
+  case object EnableSupport      extends `EnableOracleSqlplusSupport?`
   case object DoNotEnableSupport extends `EnableOracleSqlplusSupport?`
 
-  def isOracleSqlplus(e: `EnableOracleSqlplusSupport?`): Boolean = e match {
-    case EnableSupport      => true
-    case DoNotEnableSupport => false
-  }
+  def isOracleSqlplus(e: `EnableOracleSqlplusSupport?`): Boolean =
+    e match {
+      case EnableSupport      => true
+      case DoNotEnableSupport => false
+    }
 
   implicit class `EnableOracleSqlplusSupport?Ops`(val e: `EnableOracleSqlplusSupport?`) extends AnyVal {
     def isOracleSqlplus: Boolean = `EnableOracleSqlplusSupport?`.isOracleSqlplus(e)
@@ -323,6 +341,7 @@ final case class FlutterbyConfig(
     baselineDescription: BaselineDescription,
     resolvers: MigrationResolvers,
     skipDefaultResolvers: `SkipDefaultResolvers?`,
+    callbacks: Callbacks,
     skipDefaultCallbacks: `SkipDefaultCallbacks?`,
     sqlMigrationPrefix: SqlMigrationPrefix,
     undoSqlMigrationPrefix: UndoSqlMigrationPrefix,
@@ -337,7 +356,7 @@ final case class FlutterbyConfig(
     table: SchemaHistoryTable,
     schemas: Schemas,
     encoding: SqlMigrationEncoding,
-    locations: MigrationLocations,
+    locations: Locations,
     baselineOnMigrate: `BaselineOnMigrate?`,
     outOfOrder: `AllowOutOfOrder?`,
     ignoreMissingMigrations: `IgnoreMissingMigrations?`,
@@ -360,7 +379,7 @@ final case class FlutterbyConfig(
     licenseKey: Option[LicenseKey]
 )
 
-object FlutterbyConfig {
+object FlutterbyConfig                 {
   object Defaults {
     val classLoader: ClassLoader                 = Thread.currentThread.getContextClassLoader
     val dataSource: Option[DataSource]           = None
@@ -369,20 +388,21 @@ object FlutterbyConfig {
     val resolvers                                = MigrationResolvers(Vector.empty)
     val skipDefaultResolvers                     = `SkipDefaultResolvers?`.UseDefaultResolvers
     val skipDefaultCallbacks                     = `SkipDefaultCallbacks?`.UseDefaultCallbacks
+    val callbacks                                = Callbacks(Vector.empty)
     val sqlMigrationPrefix                       = SqlMigrationPrefix("V")
     val undoSqlMigrationPrefix                   = UndoSqlMigrationPrefix("U")
     val repeatableSqlMigrationPrefix             = RepeatableSqlMigrationPrefix("R")
     val sqlMigrationSeparator                    = SqlMigrationSeparator("__")
-    val sqlMigrationSuffixes                     = SqlMigrationSuffixes(Vector(SqlMigrationSufix(".sql")))
+    val sqlMigrationSuffixes                     = SqlMigrationSuffixes(SqlMigrationSufix(".sql"))
     val placeholderReplacement                   = `ReplacePlaceholders?`.ReplacePlaceholders
     val placeholderSuffix                        = PlaceholderSuffix("}")
     val placeholderPrefix                        = PlaceholderPrefix("${")
     val placeholders                             = Placeholders(Map.empty)
     val target: Option[TargetMigrationVersion]   = None
     val table                                    = SchemaHistoryTable("flyway_schema_history")
-    val schemas                                  = Schemas(Vector.empty)
+    val schemas                                  = Schemas(Vector.empty) // TODO: could use vargs (args: Int *) notation for these
     val encoding                                 = SqlMigrationEncoding(StandardCharsets.UTF_8)
-    val locations                                = MigrationLocations(Vector(new Location("db/migration")))
+    val locations                                = Locations(ClassPath(Descriptor("db/migration")))
     val baselineOnMigrate                        = `BaselineOnMigrate?`.DoNotBaseline
     val outOfOrder                               = `AllowOutOfOrder?`.DoNotAllow
     val ignoreMissingMigrations                  = `IgnoreMissingMigrations?`.DoNotIgnore
@@ -413,6 +433,7 @@ object FlutterbyConfig {
     resolvers = Defaults.resolvers,
     skipDefaultResolvers = Defaults.skipDefaultResolvers,
     skipDefaultCallbacks = Defaults.skipDefaultCallbacks,
+    callbacks = Defaults.callbacks,
     sqlMigrationPrefix = Defaults.sqlMigrationPrefix,
     undoSqlMigrationPrefix = Defaults.undoSqlMigrationPrefix,
     repeatableSqlMigrationPrefix = Defaults.repeatableSqlMigrationPrefix,
@@ -449,14 +470,14 @@ object FlutterbyConfig {
     licenseKey = Defaults.licenseKey
   )
 
-  def toFlyway(c: FlutterbyConfig, suppressUpgradeErrors: Boolean): Try[FlywayConfiguration] = {
+  def toFlyway(c: FlutterbyConfig, suppressUpgradeErrors: Boolean): Try[FWConfiguration] = {
     val communityConfig = new FluentConfiguration(c.classLoader)
       .dataSource(c.dataSource.orNull)
       .baselineVersion(c.baselineVersion.version.toFlyway)
       .baselineDescription(c.baselineDescription.value)
       .resolvers(c.resolvers.resolvers.map(r => FlutterbyMigrationResolver.toFlyway(r, c)): _*)
       .skipDefaultResolvers(c.skipDefaultResolvers.isSkipDefaultResolvers)
-      .callbacks(Array.empty[api.callback.Callback]: _*) //TODO: address
+      .callbacks(c.callbacks.callbacks.map(c => Callback.toFlyway(c)): _*)
       .skipDefaultCallbacks(c.skipDefaultCallbacks.isSkipDefaultCallbacks)
       .sqlMigrationPrefix(c.sqlMigrationPrefix.value)
       .repeatableSqlMigrationPrefix(c.repeatableSqlMigrationPrefix.value)
@@ -470,7 +491,7 @@ object FlutterbyConfig {
       .table(c.table.value)
       .schemas(c.schemas.schemas: _*)
       .encoding(c.encoding.value)
-      .locations(c.locations.locations: _*) //TODO: address
+      .locations(c.locations.locations.map(l => Location.toFlyway(l)): _*)
       .baselineOnMigrate(c.baselineOnMigrate.isBaselineOnMigrate)
       .outOfOrder(c.outOfOrder.isOutOfOrder)
       .ignoreMissingMigrations(c.ignoreMissingMigrations.isIgnoreMissingMigrations)
@@ -502,13 +523,13 @@ object FlutterbyConfig {
     proEnterpriseConfig
   }
 
-  def fromFlyway(c: FlywayConfiguration): FlutterbyConfig = {
+  def fromFlyway(c: FWConfiguration): FlutterbyConfig                                    = {
     val _ = c
     ???
   } //TODO: Implement me
 
   implicit class FlutterbyConfigOps(val c: FlutterbyConfig) extends AnyVal {
-    def toFlyway(suppressUpgradeErrors: Boolean): Try[FlywayConfiguration] =
+    def toFlyway(suppressUpgradeErrors: Boolean): Try[FWConfiguration] =
       FlutterbyConfig.toFlyway(c, suppressUpgradeErrors)
   }
 }

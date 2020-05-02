@@ -3,7 +3,7 @@ package flutterby.core.executor
 import java.sql.Connection
 
 import flutterby.core.config.FlutterbyConfig
-import org.flywaydb.core.api.executor.{ MigrationExecutor => FlywayMigrationExecutor, Context => FlywayContext }
+import org.flywaydb.core.api.executor.{MigrationExecutor => FlywayMigrationExecutor, Context => FlywayContext}
 
 import scala.util.Try
 
@@ -22,12 +22,13 @@ trait MigrationExecutor { //TODO: boolean blindness
   def canExecuteInTransaction: Boolean
 }
 object MigrationExecutor {
-  def toFlyway(m: MigrationExecutor): FlywayMigrationExecutor = new FlywayMigrationExecutor {
-    override def execute(context: FlywayContext): Unit =
-      m.execute(
-          Context(FlutterbyConfig.fromFlyway(context.getConfiguration), context.getConnection)
-        )
-        .get
-    override def canExecuteInTransaction(): Boolean = m.canExecuteInTransaction
-  }
+  def toFlyway(m: MigrationExecutor): FlywayMigrationExecutor =
+    new FlywayMigrationExecutor {
+      override def execute(context: FlywayContext): Unit =
+        m.execute(
+            Context(FlutterbyConfig.fromFlyway(context.getConfiguration), context.getConnection)
+          )
+          .get
+      override def canExecuteInTransaction(): Boolean    = m.canExecuteInTransaction
+    }
 }
