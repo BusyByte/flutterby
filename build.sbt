@@ -18,7 +18,7 @@ onLoad in Global := { s =>
 
 lazy val commonSettings = Seq(
   organizationName := "dev.busybyte",
-  scalafmtOnCompile := true,
+  //scalafmtOnCompile := true,
   libraryDependencies ++= Seq(
     Libraries.flyway,
     Libraries.specs2           % Test,
@@ -48,14 +48,19 @@ lazy val `flutterby-cats_1_x` = project
   .in(file("modules/cats_1_x"))
   .dependsOn(`flutterby-core`)
   .settings(name := "flutterby-cats_1_x")
+  .settings(crossScalaVersions := Seq(scala2_12V))
   .settings(commonSettings: _*)
   .settings(libraryDependencies += Libraries.catsEffect_1_x)
-  .settings(crossScalaVersions := Seq(scala2_12V))
 
 lazy val `flutterby-cats_2_x` = project
   .in(file("modules/cats_2_x"))
   .dependsOn(`flutterby-core`)
   .settings(name := "flutterby-cats_2_x")
-  .settings(commonSettings: _*)
-  .settings(libraryDependencies += Libraries.catsEffect_2_x)
   .settings(crossScalaVersions := Seq(scala2_12V, scala2_13V))
+  .settings(commonSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    Libraries.catsEffect_2_x,
+    Libraries.testContainersScala % Test,
+    Libraries.testContainersPostgres % Test,
+    Libraries.postgres % Test
+  ))

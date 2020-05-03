@@ -8,6 +8,9 @@ object Dependencies {
 
     // Test
     val specs2 = "4.9.4"
+    val testContainersScalaVersion = "0.36.1" // https://github.com/testcontainers/testcontainers-scala/releases
+    val testContainersPostgresVersion = "1.14.1" // https://github.com/testcontainers/testcontainers-java/releases
+    val postgresVersion      = "42.2.12"
 
     // Compiler
     val kindProjector    = "0.10.3"
@@ -23,6 +26,10 @@ object Dependencies {
     // Test
     lazy val specs2           = "org.specs2" %% "specs2-core"       % Versions.specs2
     lazy val specs2ScalaCheck = "org.specs2" %% "specs2-scalacheck" % Versions.specs2
+
+    lazy val testContainersScala = "com.dimafeng" %% "testcontainers-scala" % Versions.testContainersScalaVersion
+    lazy val testContainersPostgres = "org.testcontainers" % "postgresql" % Versions.testContainersPostgresVersion
+    lazy val postgres = "org.postgresql" % "postgresql" % Versions.postgresVersion
 
     // Compiler
     lazy val kindProjector    = "org.typelevel" %% "kind-projector"     % Versions.kindProjector
