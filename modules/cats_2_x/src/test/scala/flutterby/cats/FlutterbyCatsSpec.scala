@@ -76,37 +76,29 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
     val result: IO[MatchResult[Any]] = for {
       fb                                <- flutterby
       validateResultBeforeMigrate       <- fb.validate().attempt
-      infoService                       <- fb.info()
-      allMigrationsBeforeMigrate        <- infoService.all()
-      currentMigrationBeforeMigrate     <- infoService.current()
-      pendingMigrationsBeforeMigrate    <- infoService.pending()
-      appliedMigrationsBeforeMigrate    <- infoService.applied()
+      infoBeforeMigrate                 <- fb.info()
       //      _ <- logPendingMigrations(applied) // TODO implement
       _                                 <- fb.baseline()
       successfullyAppliedMigrationCount <- fb.migrate()
       _                                 <- fb.baseline()
       _                                 <- fb.validate()
-      infoServiceAfter                  <- fb.info()
-      allMigrationsAfterMigrate         <- infoServiceAfter.all()
-      currentMigrationAfterMigrate      <- infoServiceAfter.current()
-      pendingMigrationsAfterMigrate     <- infoServiceAfter.pending()
-      appliedMigrationsAfterMigrate     <- infoServiceAfter.applied()
+      infoAfterMigrate                  <- fb.info()
     } yield {
       validateResultBeforeMigrate.leftMap(_.getMessage) aka "validateResultBeforeMigrate" must beLeft(
         "Validate failed: Detected resolved migration not applied to database: 1"
       )
 
-      allMigrationsBeforeMigrate aka "allMigrationsBeforeMigrate" must haveSize(2)
-      pendingMigrationsBeforeMigrate aka "pendingMigrationsBeforeMigrate" must haveSize(2)
-      currentMigrationBeforeMigrate aka "currentMigrationBeforeMigrate" must beNone
-      appliedMigrationsBeforeMigrate aka "appliedMigrationsBeforeMigrate" must haveSize(0)
+      infoBeforeMigrate.all aka "allMigrationsBeforeMigrate" must haveSize(2)
+      infoBeforeMigrate.pending aka "pendingMigrationsBeforeMigrate" must haveSize(2)
+      infoBeforeMigrate.current aka "currentMigrationBeforeMigrate" must beNone
+      infoBeforeMigrate.applied aka "appliedMigrationsBeforeMigrate" must haveSize(0)
 
       successfullyAppliedMigrationCount aka "successfullyAppliedMigrationCount" must_== 1
 
-      allMigrationsAfterMigrate aka "allMigrationsAfterMigrate" must haveSize(2)
-      pendingMigrationsAfterMigrate aka "pendingMigrationsAfterMigrate" must haveSize(0)
-      currentMigrationAfterMigrate.flatMap(_.version.version) aka "currentMigrationAfterMigrate" must beSome("2")
-      appliedMigrationsAfterMigrate aka "appliedMigrationsAfterMigrate" must haveSize(2)
+      infoAfterMigrate.all aka "allMigrationsAfterMigrate" must haveSize(2)
+      infoAfterMigrate.pending aka "pendingMigrationsAfterMigrate" must haveSize(0)
+      infoAfterMigrate.current.flatMap(_.version.version) aka "currentMigrationAfterMigrate" must beSome("2")
+      infoAfterMigrate.applied aka "appliedMigrationsAfterMigrate" must haveSize(2)
     }
 
     result.unsafeRunSync()

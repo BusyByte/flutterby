@@ -14,19 +14,19 @@ import scala.concurrent.duration.FiniteDuration
 trait Flutterby[F[_]] {
   def baseline(): F[Unit]
   def migrate(): F[Int]
-  def info(): F[MigrationInfoService[F]]
+  def info(): F[AllMigrationInfo]
   def validate(): F[Unit]
   def undo(): F[Int]
   def repair(): F[Unit]
   def clean(): F[Unit]
 }
 
-trait MigrationInfoService[F[_]] {
-  def all(): F[Vector[MigrationInfo]]
-  def current(): F[Option[MigrationInfo]]
-  def pending(): F[Vector[MigrationInfo]]
-  def applied(): F[Vector[MigrationInfo]]
-}
+final case class AllMigrationInfo(
+    all: Vector[MigrationInfo],
+    current: Option[MigrationInfo],
+    pending: Vector[MigrationInfo],
+    applied: Vector[MigrationInfo]
+)
 
 sealed abstract class MigrationVersion(private val m: FlywayMigrationVersion) extends Comparable[MigrationVersion] {
   def version: Option[String]
