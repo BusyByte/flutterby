@@ -1,32 +1,28 @@
 package flutterby.cats
 
 import cats.effect.Sync
-import flutterby.core.{
-  Flutterby,
-  MigrationInfo,
-  MigrationInfoService,
-  SuccessfullyAppliedMigrationCount,
-  SuccessfullyUndoneMigrationCount
-}
-import flutterby.core.config.FlutterbyConfig
+import flutterby.core.{Flutterby, MigrationInfo, MigrationInfoService}
 import org.flywaydb.core.Flyway
-import org.flywaydb.core.api.{ MigrationInfoService => FlywayMigrationInfoService }
+import org.flywaydb.core.api.{MigrationInfoService => FlywayMigrationInfoService}
+import cats.implicits._
+import org.flywaydb.core.api.configuration.FluentConfiguration
 
-object FlutterbyCats {
-  def fromConfig[F[_]](c: FlutterbyConfig)(implicit F: Sync[F]): Flutterby[F] = new Flutterby[F] {
-    val flywayConfig                 = c.toFlyway
-    val flyway                       = new Flyway(flywayConfig)
-    override def baseline(): F[Unit] = F.delay(flyway.baseline())
-    override def migrate(): F[SuccessfullyAppliedMigrationCount] =
-      F.delay(SuccessfullyAppliedMigrationCount(flyway.migrate()))
-    override def info(): F[MigrationInfoService[F]]          = F.delay(MigrationInfoServiceCats.fromFlyway(flyway.info()))
-    override def validate(): F[Unit]                         = F.delay(flyway.validate())
-    override def undo(): F[SuccessfullyUndoneMigrationCount] = F.delay(SuccessfullyUndoneMigrationCount(flyway.undo()))
-    override def repair(): F[Unit]                           = F.delay(flyway.repair())
-    override def clean(): F[Unit]                            = F.delay(flyway.clean())
-  }
+object FlutterbyCats            {
+  def fromConfig[F[_]](c: FluentConfiguration)(implicit F: Sync[F]): F[Flutterby[F]] =
+    for {
+      flyway <- F.delay(Flyway.configure(c.getClassLoader).load())
+    } yield new Flutterby[F] {
+      override def baseline(): F[Unit]                = F.delay(flyway.baseline())
+      override def migrate(): F[Int]                  = F.delay(flyway.migrate())
+      override def info(): F[MigrationInfoService[F]] = F.delay(MigrationInfoServiceCats.fromFlyway(flyway.info()))
+      override def validate(): F[Unit]                = F.delay(flyway.validate())
+      override def undo(): F[Int]                     = F.delay(flyway.undo())
+      override def repair(): F[Unit]                  = F.delay(flyway.repair())
+      override def clean(): F[Unit]                   = F.delay(flyway.clean())
+    }
 
-  def fromDefault[F[_]: Sync]: Flutterby[F] = fromConfig(FlutterbyConfig.defaultConfig)
+  def fromDefault[F[_]: Sync](): F[Flutterby[F]]                                     =
+    fromConfig(Flyway.configure())
 }
 
 object MigrationInfoServiceCats {

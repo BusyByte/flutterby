@@ -30,7 +30,7 @@ lazy val commonSettings = Seq(
 
 lazy val `flutterby`    =
   (project in file("."))
-    .aggregate(`flutterby-core`, `flutterby-cats_1_x`)
+    .aggregate(`flutterby-core`, `flutterby-cats_1_x`, `flutterby-cats_2_x`)
 
 lazy val `flutterby-core`     = project
   .in(file("modules/core"))
