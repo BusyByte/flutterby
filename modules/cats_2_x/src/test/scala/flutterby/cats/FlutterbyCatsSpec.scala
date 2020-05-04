@@ -6,13 +6,12 @@ import java.time.temporal.ChronoUnit.SECONDS
 import cats.effect.IO
 import com.dimafeng.testcontainers.{Container, GenericContainer}
 import flutterby.core.Flutterby
-import org.flywaydb.core.Flyway
-import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
 import org.specs2.specification.{BeforeAfterAll, BeforeAfterEach}
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
 import cats.implicits._
+import flutterby.cats.config.ConfigBuilder
 
 trait ForAllTestContainer extends BeforeAfterAll {
 
@@ -60,9 +59,10 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   lazy val jdbcUrl            =
     s"jdbc:postgresql://${container.container.getContainerIpAddress}:${container.container.getMappedPort(dbPort)}/$dbName"
 
-  val dbConfig: IO[FluentConfiguration] = IO(Flyway.configure().dataSource(jdbcUrl, dbUserName, dbPassword))
-  val flutterby: IO[Flutterby[IO]]      = FlutterbyCats.fromConfig[IO](dbConfig)
-  val dbClean: IO[Unit]                 = for {
+  lazy val dbConfig: ConfigBuilder[IO] = ConfigBuilder.impl[IO]
+    .dataSource(jdbcUrl, dbUserName, dbPassword)
+  lazy val flutterby: IO[Flutterby[IO]]      = FlutterbyCats.fromConfig[IO](dbConfig)
+  lazy val dbClean: IO[Unit]                 = for {
     fb <- flutterby
     _  <- fb.clean()
   } yield ()
