@@ -13,7 +13,7 @@ import org.flywaydb.core.api.configuration.{Configuration, FluentConfiguration}
 import org.flywaydb.core.api.resolver.MigrationResolver
 import cats.implicits._
 
-final class ConfigBuilder[F[_]: Sync] private[config] (private val f: F[FluentConfiguration])
+final class ConfigBuilder[F[_]] private[config] (private val f: F[FluentConfiguration])
 object ConfigBuilder {
   def impl[F[_]](implicit F: Sync[F]): ConfigBuilder[F] = new ConfigBuilder[F](F.delay(new FluentConfiguration()))
 
