@@ -59,10 +59,11 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   lazy val jdbcUrl            =
     s"jdbc:postgresql://${container.container.getContainerIpAddress}:${container.container.getMappedPort(dbPort)}/$dbName"
 
-  lazy val dbConfig: ConfigBuilder[IO] = ConfigBuilder.impl[IO]
+  lazy val dbConfig: ConfigBuilder[IO]  = ConfigBuilder
+    .impl[IO]
     .dataSource(jdbcUrl, dbUserName, dbPassword)
-  lazy val flutterby: IO[Flutterby[IO]]      = FlutterbyCats.fromConfig[IO](dbConfig)
-  lazy val dbClean: IO[Unit]                 = for {
+  lazy val flutterby: IO[Flutterby[IO]] = FlutterbyCats.fromConfig[IO](dbConfig)
+  lazy val dbClean: IO[Unit]            = for {
     fb <- flutterby
     _  <- fb.clean()
   } yield ()

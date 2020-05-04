@@ -5,12 +5,12 @@ import flutterby.core.{AllMigrationInfo, Flutterby, MigrationInfo}
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.{MigrationInfoService => FlywayMigrationInfoService}
 import cats.implicits._
-import org.flywaydb.core.api.configuration.Configuration
+import flutterby.cats.config.ConfigBuilder
 
 object FlutterbyCats        {
-  def fromConfig[F[_]](config: F[Configuration])(implicit F: Sync[F]): F[Flutterby[F]] =
+  def fromConfig[F[_]](config: ConfigBuilder[F])(implicit F: Sync[F]): F[Flutterby[F]] =
     for {
-      c      <- config
+      c      <- config.build
       flyway <- F.delay(Flyway.configure(c.getClassLoader).configuration(c).load())
     } yield new Flutterby[F] {
       override def baseline(): F[Unit]         = F.delay(flyway.baseline())

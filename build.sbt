@@ -58,9 +58,11 @@ lazy val `flutterby-cats_2_x` = project
   .settings(name := "flutterby-cats_2_x")
   .settings(crossScalaVersions := Seq(scala2_12V, scala2_13V))
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= Seq(
-    Libraries.catsEffect_2_x,
-    Libraries.testContainersScala % Test,
-    Libraries.testContainersPostgres % Test,
-    Libraries.postgres % Test
-  ))
+  .settings(
+    libraryDependencies ++= Seq(
+      Libraries.catsEffect_2_x,
+      Libraries.testContainersScala    % Test,
+      Libraries.testContainersPostgres % Test,
+      Libraries.postgres               % Test
+    )
+  )
