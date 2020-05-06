@@ -78,7 +78,6 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
       fb                                <- flutterby
       validateResultBeforeMigrate       <- fb.validate().attempt
       infoBeforeMigrate                 <- fb.info()
-      //      _ <- logPendingMigrations(applied) // TODO implement
       _                                 <- fb.baseline()
       successfullyAppliedMigrationCount <- fb.migrate()
       _                                 <- fb.baseline()
