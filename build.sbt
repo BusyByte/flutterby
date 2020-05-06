@@ -17,7 +17,7 @@ onLoad in Global := { s =>
 }
 
 lazy val commonSettings = Seq(
-  organizationName := "dev.busybyte",
+  organizationName := "dev.shawngarner",
   //scalafmtOnCompile := true,
   libraryDependencies ++= Seq(
     Libraries.flyway,
