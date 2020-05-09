@@ -84,9 +84,12 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
       _                                 <- fb.validate()
       infoAfterMigrate                  <- fb.info()
     } yield {
-      validateResultBeforeMigrate.leftMap(_.getMessage) aka "validateResultBeforeMigrate" must beLeft(
-        "Validate failed: Detected resolved migration not applied to database: 1"
-      )
+      validateResultBeforeMigrate.leftMap(_.getMessage) aka "validateResultBeforeMigrate" must beLeft.which {
+        case msg: String =>
+          msg must contain("Validate failed:")
+          msg must contain("Detected resolved migration not applied to database: 1")
+          msg must contain("Detected resolved migration not applied to database: 2")
+      }
 
       infoBeforeMigrate.all aka "allMigrationsBeforeMigrate" must haveSize(2)
       infoBeforeMigrate.pending aka "pendingMigrationsBeforeMigrate" must haveSize(2)

@@ -112,6 +112,13 @@ object ConfigBuilder {
           updated <- F.delay(config.ignoreFutureMigrations(ignoreFutureMigrations))
         } yield updated
       )
+    def validateMigrationNaming(validateMigrationNaming: Boolean): ConfigBuilder[F]          =
+      new ConfigBuilder[F](
+        for {
+          config  <- c.f
+          updated <- F.delay(config.validateMigrationNaming(validateMigrationNaming))
+        } yield updated
+      )
     def validateOnMigrate(validateOnMigrate: Boolean): ConfigBuilder[F]                      =
       new ConfigBuilder[F](
         for {
@@ -159,6 +166,13 @@ object ConfigBuilder {
         for {
           config  <- c.f
           updated <- F.delay(config.encoding(encoding))
+        } yield updated
+      )
+    def defaultSchema(schema: String): ConfigBuilder[F]                                      =
+      new ConfigBuilder[F](
+        for {
+          config  <- c.f
+          updated <- F.delay(config.defaultSchema(schema))
         } yield updated
       )
     def schemas(schemas: String*): ConfigBuilder[F]                                          =
@@ -383,6 +397,13 @@ object ConfigBuilder {
         for {
           config  <- c.f
           updated <- F.delay(config.configuration(CollectionConversions.toJavaMap(props)))
+        } yield updated
+      )
+    def loadDefaultConfigurationFiles(encoding: String): ConfigBuilder[F]                    =
+      new ConfigBuilder[F](
+        for {
+          config  <- c.f
+          updated <- F.delay(config.loadDefaultConfigurationFiles(encoding))
         } yield updated
       )
     def envVars(): ConfigBuilder[F]                                                          =

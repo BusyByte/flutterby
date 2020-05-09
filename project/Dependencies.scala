@@ -8,14 +8,14 @@ object Dependencies {
 
     // Test
     val specs2                        = "4.9.4"
-    val testContainersScalaVersion    = "0.36.1" // https://github.com/testcontainers/testcontainers-scala/releases
+    val testContainersScalaVersion    = "0.37.0" // https://github.com/testcontainers/testcontainers-scala/releases
     val testContainersPostgresVersion = "1.14.1" // https://github.com/testcontainers/testcontainers-java/releases
     val postgresVersion               = "42.2.12"
 
     // Compiler
     val kindProjector    = "0.10.3"
     val betterMonadicFor = "0.3.1"
-    val flyway           = "5.2.4"
+    val flyway           = "6.4.1"
   }
 
   object Libraries {
