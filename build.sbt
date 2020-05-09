@@ -14,8 +14,9 @@ onLoad in Global := { s =>
 
 lazy val `flutterby` =
   (project in file("."))
-    .settings(noPublishSettings)
     .aggregate(`flutterby-core`, `flutterby-cats_1_x`, `flutterby-cats_2_x`)
+    .settings(noPublishSettings)
+    .settings(commonSettings, releaseSettings)
 
 lazy val `flutterby-core`     = project
   .in(file("modules/core"))
