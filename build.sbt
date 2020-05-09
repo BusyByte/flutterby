@@ -7,6 +7,8 @@ val silencerV = "1.7.0"
 
 scalaVersion in ThisBuild := scala2_12V
 
+pgpPassphrase in ThisBuild :=  sys.env.get("PGP_PASSPHRASE").map(_.toArray)
+
 // check for library updates whenever the project is [re]load
 onLoad in Global := { s =>
   "dependencyUpdates" :: s
@@ -71,7 +73,6 @@ lazy val contributors         = Seq(
 )
 
 lazy val releaseSettings      = Seq(
-  pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toArray),
   publishArtifact in Test := false,
   scmInfo := Some(
     ScmInfo(
