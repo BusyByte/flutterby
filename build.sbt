@@ -71,6 +71,7 @@ lazy val contributors         = Seq(
 )
 
 lazy val releaseSettings      = Seq(
+  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray),
   publishArtifact in Test := false,
   scmInfo := Some(
     ScmInfo(
