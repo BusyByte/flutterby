@@ -15,9 +15,13 @@ import cats.implicits._
 
 final class ConfigBuilder[F[_]] private[config] (private val f: F[FluentConfiguration])
 object ConfigBuilder {
-  def impl[F[_]](implicit F: Sync[F]): ConfigBuilder[F] = new ConfigBuilder[F](F.delay(new FluentConfiguration()))
+  def impl[F[_]](
+      implicit F: Sync[F]
+  ): ConfigBuilder[F] = new ConfigBuilder[F](F.delay(new FluentConfiguration()))
 
-  implicit class ConfigOps[F[_]](val c: ConfigBuilder[F])(implicit F: Sync[F]) {
+  implicit class ConfigOps[F[_]](val c: ConfigBuilder[F])(
+      implicit F: Sync[F]
+  ) {
 
     def dataSource(dataSource: DataSource): ConfigBuilder[F]                                 =
       new ConfigBuilder[F](

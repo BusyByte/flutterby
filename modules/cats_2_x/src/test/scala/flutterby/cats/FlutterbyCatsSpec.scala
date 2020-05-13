@@ -59,7 +59,7 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   lazy val jdbcUrl            =
     s"jdbc:postgresql://${container.container.getContainerIpAddress}:${container.container.getMappedPort(dbPort)}/$dbName"
 
-  import config.syntax._
+  import syntax.all._
   lazy val dbConfig: ConfigBuilder[IO]  = ConfigBuilder
     .impl[IO]
     .dataSource(jdbcUrl, dbUserName, dbPassword)

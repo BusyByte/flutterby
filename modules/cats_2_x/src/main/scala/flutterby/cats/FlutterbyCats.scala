@@ -8,7 +8,9 @@ import cats.implicits._
 import flutterby.cats.config.ConfigBuilder
 
 object FlutterbyCats        {
-  def fromConfig[F[_]](config: ConfigBuilder[F])(implicit F: Sync[F]): F[Flutterby[F]] = {
+  def fromConfig[F[_]](config: ConfigBuilder[F])(
+      implicit F: Sync[F]
+  ): F[Flutterby[F]] = {
     import flutterby.cats.config.syntax._
     for {
       c      <- config.build
@@ -27,7 +29,9 @@ object FlutterbyCats        {
 }
 
 object AllMigrationInfoCats {
-  def fromFlyway[F[_]](f: FlywayMigrationInfoService)(implicit F: Sync[F]): F[AllMigrationInfo] =
+  def fromFlyway[F[_]](f: FlywayMigrationInfoService)(
+      implicit F: Sync[F]
+  ): F[AllMigrationInfo] =
     F.delay(
       AllMigrationInfo(
         all = f.all().toVector.map(MigrationInfo.fromFlyway),
