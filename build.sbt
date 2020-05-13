@@ -6,7 +6,6 @@ val scala2_13V = "2.13.2"
 scalaVersion in ThisBuild := scala2_12V
 
 publishTo in ThisBuild := sonatypePublishToBundle.value
-pgpPassphrase in ThisBuild := sys.env.get("PGP_PASSPHRASE").map(_.toArray)
 
 // check for library updates whenever the project is [re]load
 onLoad in Global := { s =>
