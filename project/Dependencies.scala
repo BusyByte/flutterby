@@ -8,7 +8,7 @@ object Dependencies {
 
     // Test
     val specs2                        = "4.9.4"
-    val testContainersScalaVersion    = "0.36.1" // https://github.com/testcontainers/testcontainers-scala/releases
+    val testContainersScalaVersion    = "0.37.0" // https://github.com/testcontainers/testcontainers-scala/releases
     val testContainersPostgresVersion = "1.14.1" // https://github.com/testcontainers/testcontainers-java/releases
     val postgresVersion               = "42.2.12"
 

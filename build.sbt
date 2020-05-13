@@ -3,12 +3,9 @@ import Dependencies.Libraries
 val scala2_12V = "2.12.11"
 val scala2_13V = "2.13.2"
 
-val silencerV = "1.7.0"
-
 scalaVersion in ThisBuild := scala2_12V
 
 publishTo in ThisBuild := sonatypePublishToBundle.value
-pgpPassphrase in ThisBuild :=  sys.env.get("PGP_PASSPHRASE").map(_.toArray)
 
 // check for library updates whenever the project is [re]load
 onLoad in Global := { s =>
@@ -21,16 +18,10 @@ lazy val `flutterby` =
     .settings(noPublishSettings)
     .settings(commonSettings, releaseSettings)
 
-lazy val `flutterby-core`     = project
+lazy val `flutterby-core` = project
   .in(file("modules/core"))
   .settings(name := "flutterby-core")
   .settings(commonSettings, releaseSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerV cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % silencerV % Provided cross CrossVersion.full
-    )
-  )
   .settings(crossScalaVersions := Seq(scala2_12V, scala2_13V))
 
 lazy val `flutterby-cats_1_x` = project
