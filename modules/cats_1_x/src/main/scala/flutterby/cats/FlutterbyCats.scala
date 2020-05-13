@@ -10,7 +10,8 @@ import flutterby.cats.config.ConfigBuilder
 object FlutterbyCats        {
   def fromConfig[F[_]](config: ConfigBuilder[F])(
       implicit F: Sync[F]
-  ): F[Flutterby[F]] =
+  ): F[Flutterby[F]] = {
+    import flutterby.cats.config.syntax._
     for {
       c      <- config.build
       flyway <- F.delay(Flyway.configure(c.getClassLoader).configuration(c).load())
@@ -24,6 +25,7 @@ object FlutterbyCats        {
       override def repair(): F[Unit]           = F.delay(flyway.repair())
       override def clean(): F[Unit]            = F.delay(flyway.clean())
     }
+  }
 }
 
 object AllMigrationInfoCats {
