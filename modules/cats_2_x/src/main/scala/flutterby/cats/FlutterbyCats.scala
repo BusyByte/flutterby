@@ -5,10 +5,10 @@ import flutterby.core.{AllMigrationInfo, Flutterby, MigrationInfo}
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.{MigrationInfoService => FlywayMigrationInfoService}
 import cats.implicits._
-import flutterby.cats.config.ConfigBuilder
+import flutterby.cats.config.Endo
 
 object FlutterbyCats        {
-  def fromConfig[F[_]](config: ConfigBuilder[F])(
+  def fromConfig[F[_]](config: Endo[F])(
       implicit F: Sync[F]
   ): F[Flutterby[F]] = {
     import flutterby.cats.config.syntax._
