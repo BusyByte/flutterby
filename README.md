@@ -24,9 +24,12 @@ Supports Scala 2.12.x and 2.13.x
 ## Basic Usage
 
 ```scala
+import cats.effect.IO
+import cats.implicits._
 import flutterby.core.Flutterby
 import flutterby.cats.FlutterbyCats
 import flutterby.cats.config.ConfigBuilder
+import flutterby.cats.syntax.all._
 
 val dbConfig: ConfigBuilder[IO]  = 
   ConfigBuilder
