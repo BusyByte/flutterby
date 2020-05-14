@@ -28,11 +28,11 @@ package config {
 
     import flutterby.cats.config.syntax._
 
-    def dataSource[F[_]: Sync](dataSource: DataSource): Endo[F] =
-      _.updateConf(_.dataSource(dataSource))
-
     def dataSource[F[_]: Sync](url: String, user: String, password: String): Endo[F] =
       _.updateConf(_.dataSource(url, user, password))
+
+    def dataSource[F[_]: Sync](dataSource: DataSource): Endo[F] =
+      _.updateConf(_.dataSource(dataSource))
 
     def dryRunOutput[F[_]: Sync](dryRunOutput: OutputStream): Endo[F] =
       _.updateConf(_.dryRunOutput(dryRunOutput))
