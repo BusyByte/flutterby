@@ -26,6 +26,24 @@ object FlutterbyCats        {
       override def clean(): F[Unit]            = F.delay(flyway.clean())
     }
   }
+  def fromConfig[F[_]](config: ConfigBuilder[F], classLoader: ClassLoader)(
+      implicit F: Sync[F]
+  ): F[Flutterby[F]] = {
+    import flutterby.cats.config.syntax._
+    for {
+      c      <- config.build(classLoader)
+      flyway <- F.delay(Flyway.configure(c.getClassLoader).configuration(c).load())
+    } yield new Flutterby[F] {
+      override def baseline(): F[Unit]         = F.delay(flyway.baseline())
+      override def migrate(): F[Int]           = F.delay(flyway.migrate())
+      override def info(): F[AllMigrationInfo] =
+        F.delay(flyway.info()) >>= ((i: FlywayMigrationInfoService) => AllMigrationInfoCats.fromFlyway[F](i))
+      override def validate(): F[Unit]         = F.delay(flyway.validate())
+      override def undo(): F[Int]              = F.delay(flyway.undo())
+      override def repair(): F[Unit]           = F.delay(flyway.repair())
+      override def clean(): F[Unit]            = F.delay(flyway.clean())
+    }
+  }
 }
 
 object AllMigrationInfoCats {

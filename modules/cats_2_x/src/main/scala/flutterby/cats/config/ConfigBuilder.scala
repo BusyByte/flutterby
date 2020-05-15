@@ -187,8 +187,11 @@ package config {
     def envVars[F[_]: Sync](): Endo[F] =
       _.updateConf(_.envVars())
 
-    def build[F[_]: Sync](s: ConfigBuilder[F]): F[Configuration] = s.run(new FluentConfiguration()).widen[Configuration]
+    def build[F[_]: Sync](s: ConfigBuilder[F]): F[Configuration] =
+      s.run(new FluentConfiguration()).widen[Configuration]
 
+    def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): F[Configuration] =
+      s.run(new FluentConfiguration(classLoader)).widen[Configuration]
   }
 
   package object syntax extends ConfigBuilderSyntax
@@ -363,7 +366,15 @@ package config {
       def updateConf(fn: FluentConfiguration => FluentConfiguration)(implicit F: Sync[F]): ConfigBuilder[F] =
         s.flatMapF((f: FluentConfiguration) => F.delay(fn(f)))
 
-      def build(implicit F: Sync[F]): F[Configuration] = ConfigBuilder.build(s)
+      def build(
+          implicit F: Sync[F]
+      ): F[Configuration] =
+        ConfigBuilder.build(s)
+
+      def build(classLoader: ClassLoader)(
+          implicit F: Sync[F]
+      ): F[Configuration] =
+        ConfigBuilder.build(s, classLoader)
     }
 
   }
