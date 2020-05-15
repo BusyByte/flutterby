@@ -200,6 +200,9 @@ package config {
 
     def build[F[_]: Sync](s: ConfigBuilder[F]): F[Configuration] =
       s.run(new FluentConfiguration()).widen[Configuration]
+
+    def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): F[Configuration] =
+      s.run(new FluentConfiguration(classLoader)).widen[Configuration]
   }
 
   package object syntax extends ConfigBuilderSyntax
@@ -501,6 +504,11 @@ package config {
           implicit F: Sync[F]
       ): F[Configuration] =
         ConfigBuilder.build(s)
+
+      def build(classLoader: ClassLoader)(
+          implicit F: Sync[F]
+      ): F[Configuration] =
+        ConfigBuilder.build(s, classLoader)
     }
 
   }

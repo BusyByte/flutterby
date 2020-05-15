@@ -3,12 +3,15 @@ package flutterby.cats.config
 import java.nio.charset.StandardCharsets
 import java.util
 
+import cats.effect.IO
 import flutterby.core.jdk.CollectionConversions
+import javax.sql.DataSource
 import org.flywaydb.core.api.{executor, resolver, MigrationType, MigrationVersion}
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.flywaydb.core.api.executor.MigrationExecutor
 import org.flywaydb.core.api.migration.{Context, JavaMigration}
 import org.flywaydb.core.api.resolver.{MigrationResolver, ResolvedMigration}
+import org.flywaydb.core.internal.jdbc.DriverDataSource
 import org.scalacheck.{Arbitrary, Gen}
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
@@ -52,7 +55,7 @@ object Arbitraries {
 
   implicit val arbMigrationType: Arbitrary[MigrationType] = Arbitrary(Gen.oneOf(MigrationType.values()))
 
-  implicit val arbMigrationExecutor: Arbitrary[MigrationExecutor]     = Arbitrary {
+  implicit val arbMigrationExecutor: Arbitrary[MigrationExecutor]        = Arbitrary {
     for {
       executeResult        <- Gen
                          .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
@@ -64,7 +67,7 @@ object Arbitraries {
     }
   }
 
-  implicit val arbResolvedMigration: Arbitrary[ResolvedMigration]     = Arbitrary {
+  implicit val arbResolvedMigration: Arbitrary[ResolvedMigration]        = Arbitrary {
     for {
       version                                    <- Arbitrary.arbitrary[MigrationVersion]
       description                                <- Gen.asciiPrintableStr
@@ -90,7 +93,7 @@ object Arbitraries {
     }
   }
 
-  implicit val arbMigrationResolver: Arbitrary[MigrationResolver]     = Arbitrary {
+  implicit val arbMigrationResolver: Arbitrary[MigrationResolver]        = Arbitrary {
     for {
       resolvedMigrations <- Gen.listOf(Arbitrary.arbitrary[ResolvedMigration])
     } yield new MigrationResolver {
@@ -99,7 +102,13 @@ object Arbitraries {
     }
   }
 
-  implicit val arbFluentConfiguration: Arbitrary[FluentConfiguration] =
+  final case class FluentConfigWithInputs(
+      fluentConfiguration: FluentConfiguration,
+      jdbcUrl: String,
+      username: String,
+      password: String
+  )
+  implicit val arbFluentConfiguration: Arbitrary[FluentConfigWithInputs] =
     Arbitrary {
       for {
         locationPrefix               <- Gen.oneOf("filesystem:", "classpath:")
@@ -143,51 +152,74 @@ object Arbitraries {
         installedBy                  <- Gen.asciiPrintableStr
         group                        <- Arbitrary.arbitrary[Boolean]
         licenseKey                   <- Gen.asciiPrintableStr
-      } yield new FluentConfiguration(Thread.currentThread.getContextClassLoader) // TODO: handle other variations
-        .locations(fullLocation)
-        .encoding(encoding)
-        .defaultSchema(defaultSchema)
-        .schemas(schemas: _*)
-        .table(table)
-        .tablespace(tableSpace)                                                   // TODO: is this in the config?
-        .target(target)
-        .placeholderReplacement(isPlaceholderReplacement)
-        .placeholders(CollectionConversions.toJavaMap(placeholders))
-        .placeholderPrefix(placeholderPrefix)
-        .placeholderSuffix(placeholderSuffix)
-        .sqlMigrationPrefix(sqlMigrationPrefix)
-        .repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix)
-        .sqlMigrationSeparator(sqlMigrationSeparator)
-        .sqlMigrationSuffixes(sqlMigrationSuffixes: _*)
-        .javaMigrations(javaMigrations: _*)                                       // TODO: is this in the config?
-        .ignoreMissingMigrations(ignoreMissingMigrations)
-        .ignoreIgnoredMigrations(ignoreIgnoredMigrations)
-        .ignorePendingMigrations(ignorePendingMigrations)
-        .ignoreFutureMigrations(ignoreFutureMigrations)
-        .validateMigrationNaming(validateMigrationNaming)
-        .validateOnMigrate(validateOnMigrate)
-        .cleanOnValidationError(cleanOnValidationError)
-        .cleanDisabled(cleanDisabled)
-        .baselineVersion(baselineVersion)
-        .baselineDescription(baselineDescription)
-        .baselineOnMigrate(baselineOnMigrate)
-        .outOfOrder(outOfOrder)
-        .resolvers(resolvers: _*)
-        .skipDefaultResolvers(skipDefaultResolvers)
-        .dataSource(jdbcUrl, username, password)
-        .connectRetries(connectRetries)
-        .initSql(initSql)
-        .mixed(mixed)
-        .installedBy(installedBy)
-        .group(group)
-        .licenseKey(licenseKey)
+        f                             = new FluentConfiguration(Thread.currentThread.getContextClassLoader) // TODO: handle other variations
+              .locations(fullLocation)
+              .encoding(encoding)
+              .defaultSchema(defaultSchema)
+              .schemas(schemas: _*)
+              .table(table)
+              .tablespace(tableSpace)             // TODO: is this in the config?
+              .target(target)
+              .placeholderReplacement(isPlaceholderReplacement)
+              .placeholders(CollectionConversions.toJavaMap(placeholders))
+              .placeholderPrefix(placeholderPrefix)
+              .placeholderSuffix(placeholderSuffix)
+              .sqlMigrationPrefix(sqlMigrationPrefix)
+              .repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix)
+              .sqlMigrationSeparator(sqlMigrationSeparator)
+              .sqlMigrationSuffixes(sqlMigrationSuffixes: _*)
+              .javaMigrations(javaMigrations: _*) // TODO: is this in the config?
+              .ignoreMissingMigrations(ignoreMissingMigrations)
+              .ignoreIgnoredMigrations(ignoreIgnoredMigrations)
+              .ignorePendingMigrations(ignorePendingMigrations)
+              .ignoreFutureMigrations(ignoreFutureMigrations)
+              .validateMigrationNaming(validateMigrationNaming)
+              .validateOnMigrate(validateOnMigrate)
+              .cleanOnValidationError(cleanOnValidationError)
+              .cleanDisabled(cleanDisabled)
+              .baselineVersion(baselineVersion)
+              .baselineDescription(baselineDescription)
+              .baselineOnMigrate(baselineOnMigrate)
+              .outOfOrder(outOfOrder)
+              .resolvers(resolvers: _*)
+              .skipDefaultResolvers(skipDefaultResolvers)
+              .dataSource(jdbcUrl, username, password)
+              .connectRetries(connectRetries)
+              .initSql(initSql)
+              .mixed(mixed)
+              .installedBy(installedBy)
+              .group(group)
+              .licenseKey(licenseKey)
+      } yield FluentConfigWithInputs(f, jdbcUrl, username, password)
     }
 }
 
 class ConfigBuilderSpec extends Specification with ScalaCheck {
   import Arbitraries._
-  "must have be the same" in prop { (f: FluentConfiguration) =>
-    val _ = f
-    ko
+  "must have be the same" in prop { (f: FluentConfigWithInputs) =>
+    val fluentConfig                     = f.fluentConfiguration
+    import _root_.flutterby.cats.syntax.all._
+    val configBuilder: ConfigBuilder[IO] = ConfigBuilder
+      .impl[IO]
+      .dataSource(f.jdbcUrl, f.username, f.password)
+      .group(fluentConfig.isGroup)
+      .installedBy(fluentConfig.getInstalledBy)
+
+    val finalConfig = configBuilder.build(fluentConfig.getClassLoader).unsafeRunSync()
+
+    finalConfig.getClassLoader must_== fluentConfig.getClassLoader
+
+    val finalDataSource  = extractDataSourceData(finalConfig.getDataSource).get
+    val fluentDataSource = extractDataSourceData(fluentConfig.getDataSource).get
+    finalDataSource must_== fluentDataSource
+
+    finalConfig.isGroup must_== fluentConfig.isGroup
+    finalConfig.getInstalledBy must_== fluentConfig.getInstalledBy
   }
+
+  def extractDataSourceData(ds: DataSource): Option[(String, String, String)] =
+    ds match {
+      case dds: DriverDataSource => Some((dds.getUrl, dds.getUser, dds.getPassword))
+      case _                     => None
+    }
 }
