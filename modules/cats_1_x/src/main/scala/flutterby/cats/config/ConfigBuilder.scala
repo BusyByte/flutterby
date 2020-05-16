@@ -21,8 +21,13 @@ package config {
   import org.flywaydb.core.api.{Location, MigrationVersion}
   import cats.syntax.all._
 
+  final case class Config[F[_]](config: F[Configuration])
+
   object ConfigBuilder {
-    def impl[F[_]](implicit F: Sync[F]): ConfigBuilder[F] = Kleisli.ask[F, FluentConfiguration]
+
+    def impl[F[_]](
+        implicit F: Sync[F]
+    ): ConfigBuilder[F] = Kleisli.ask[F, FluentConfiguration]
 
     type Endo[F[_]] = ConfigBuilder[F] => ConfigBuilder[F] // Endomorphism
 
@@ -187,8 +192,11 @@ package config {
     def envVars[F[_]: Sync](): Endo[F] =
       _.updateConf(_.envVars())
 
-    def build[F[_]: Sync](s: ConfigBuilder[F]): F[Configuration] = s.run(new FluentConfiguration()).widen[Configuration]
+    def build[F[_]: Sync](s: ConfigBuilder[F]): Config[F] =
+      Config[F](s.run(new FluentConfiguration()).widen[Configuration])
 
+    def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): Config[F] =
+      Config[F](s.run(new FluentConfiguration(classLoader)).widen[Configuration])
   }
 
   package object syntax extends ConfigBuilderSyntax
@@ -267,7 +275,9 @@ package config {
       def table(table: String)(implicit F: Sync[F]): ConfigBuilder[F] =
         ConfigBuilder.table(table).apply(s)
 
-      def target(target: MigrationVersion)(implicit F: Sync[F]): ConfigBuilder[F] =
+      def target(target: MigrationVersion)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
         ConfigBuilder.target(target).apply(s)
 
       def target(target: String)(implicit F: Sync[F]): ConfigBuilder[F] =
@@ -300,7 +310,9 @@ package config {
       def sqlMigrationSuffixes(sqlMigrationSuffixes: String*)(implicit F: Sync[F]): ConfigBuilder[F] =
         ConfigBuilder.sqlMigrationSuffixes(sqlMigrationSuffixes: _*).apply(s)
 
-      def connectRetries(connectRetries: Int)(implicit F: Sync[F]): ConfigBuilder[F] =
+      def connectRetries(connectRetries: Int)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
         ConfigBuilder.connectRetries(connectRetries).apply(s)
 
       def initSql(initSql: String)(implicit F: Sync[F]): ConfigBuilder[F] =
@@ -363,7 +375,15 @@ package config {
       def updateConf(fn: FluentConfiguration => FluentConfiguration)(implicit F: Sync[F]): ConfigBuilder[F] =
         s.flatMapF((f: FluentConfiguration) => F.delay(fn(f)))
 
-      def build(implicit F: Sync[F]): F[Configuration] = ConfigBuilder.build(s)
+      def build(
+          implicit F: Sync[F]
+      ): Config[F] =
+        ConfigBuilder.build(s)
+
+      def build(classLoader: ClassLoader)(
+          implicit F: Sync[F]
+      ): Config[F] =
+        ConfigBuilder.build(s, classLoader)
     }
 
   }
