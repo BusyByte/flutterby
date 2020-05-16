@@ -270,7 +270,9 @@ package config {
       def table(table: String)(implicit F: Sync[F]): ConfigBuilder[F] =
         ConfigBuilder.table(table).apply(s)
 
-      def target(target: MigrationVersion)(implicit F: Sync[F]): ConfigBuilder[F] =
+      def target(target: MigrationVersion)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
         ConfigBuilder.target(target).apply(s)
 
       def target(target: String)(implicit F: Sync[F]): ConfigBuilder[F] =
@@ -303,7 +305,9 @@ package config {
       def sqlMigrationSuffixes(sqlMigrationSuffixes: String*)(implicit F: Sync[F]): ConfigBuilder[F] =
         ConfigBuilder.sqlMigrationSuffixes(sqlMigrationSuffixes: _*).apply(s)
 
-      def connectRetries(connectRetries: Int)(implicit F: Sync[F]): ConfigBuilder[F] =
+      def connectRetries(connectRetries: Int)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
         ConfigBuilder.connectRetries(connectRetries).apply(s)
 
       def initSql(initSql: String)(implicit F: Sync[F]): ConfigBuilder[F] =

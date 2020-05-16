@@ -193,20 +193,76 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
       .mixed(fluentConfig.isMixed)
       .ignoreMissingMigrations(fluentConfig.isIgnoreMissingMigrations)
       .ignoreIgnoredMigrations(fluentConfig.isIgnoreIgnoredMigrations)
+      .ignorePendingMigrations(fluentConfig.isIgnorePendingMigrations)
+      .ignoreFutureMigrations(fluentConfig.isIgnoreFutureMigrations)
+      .validateOnMigrate(fluentConfig.isValidateOnMigrate)
+      .cleanOnValidationError(fluentConfig.isCleanOnValidationError)
+      .cleanDisabled(fluentConfig.isCleanDisabled)
+      .locations(fluentConfig.getLocations.toList)
+      .encoding(fluentConfig.getEncoding)
+      .schemas(fluentConfig.getSchemas: _*)
+      .table(fluentConfig.getTable)
+      .target(fluentConfig.getTarget)
+      .placeholderReplacement(fluentConfig.isPlaceholderReplacement)
+      .placeholders(CollectionConversions.toScalaMap(fluentConfig.getPlaceholders))
+      .placeholderPrefix(fluentConfig.getPlaceholderPrefix)
+      .placeholderSuffix(fluentConfig.getPlaceholderSuffix)
+      .sqlMigrationPrefix(fluentConfig.getSqlMigrationPrefix)
+      .repeatableSqlMigrationPrefix(fluentConfig.getRepeatableSqlMigrationPrefix)
+      .sqlMigrationSeparator(fluentConfig.getSqlMigrationSeparator)
+      .sqlMigrationSuffixes(fluentConfig.getSqlMigrationSuffixes: _*)
+      .connectRetries(fluentConfig.getConnectRetries)
+      .initSql(fluentConfig.getInitSql)
+      .baselineVersion(fluentConfig.getBaselineVersion)
+      .baselineDescription(fluentConfig.getBaselineDescription)
+      .baselineOnMigrate(fluentConfig.isBaselineOnMigrate)
+      .outOfOrder(fluentConfig.isOutOfOrder)
+      .callbacks(fluentConfig.getCallbacks: _*)
+      .skipDefaultCallbacks(fluentConfig.isSkipDefaultCallbacks)
+      .resolvers(fluentConfig.getResolvers: _*)
+      .skipDefaultResolvers(fluentConfig.isSkipDefaultResolvers)
 
-    val finalConfig = configBuilder.build(fluentConfig.getClassLoader).unsafeRunSync()
+    val resultingConfig = configBuilder.build(fluentConfig.getClassLoader).unsafeRunSync()
 
-    finalConfig.getClassLoader must_== fluentConfig.getClassLoader
+    resultingConfig.getClassLoader must_== fluentConfig.getClassLoader
 
-    val finalDataSource  = extractDataSourceData(finalConfig.getDataSource).get
+    val finalDataSource  = extractDataSourceData(resultingConfig.getDataSource).get
     val fluentDataSource = extractDataSourceData(fluentConfig.getDataSource).get
     finalDataSource must_== fluentDataSource
 
-    finalConfig.isGroup must_== fluentConfig.isGroup
-    finalConfig.getInstalledBy must_== fluentConfig.getInstalledBy
-    finalConfig.isMixed must_== fluentConfig.isMixed
-    finalConfig.isIgnoreMissingMigrations must_== fluentConfig.isIgnoreMissingMigrations
-    finalConfig.isIgnoreIgnoredMigrations must_== fluentConfig.isIgnoreIgnoredMigrations
+    resultingConfig.isGroup must_== fluentConfig.isGroup
+    resultingConfig.getInstalledBy must_== fluentConfig.getInstalledBy
+    resultingConfig.isMixed must_== fluentConfig.isMixed
+    resultingConfig.isIgnoreMissingMigrations must_== fluentConfig.isIgnoreMissingMigrations
+    resultingConfig.isIgnoreIgnoredMigrations must_== fluentConfig.isIgnoreIgnoredMigrations
+    resultingConfig.isIgnorePendingMigrations must_== fluentConfig.isIgnorePendingMigrations
+    resultingConfig.isIgnoreFutureMigrations must_== fluentConfig.isIgnoreFutureMigrations
+    resultingConfig.isValidateOnMigrate must_== fluentConfig.isValidateOnMigrate
+    resultingConfig.isCleanOnValidationError must_== fluentConfig.isCleanOnValidationError
+    resultingConfig.isCleanDisabled must_== fluentConfig.isCleanDisabled
+    resultingConfig.getLocations must_== fluentConfig.getLocations
+    resultingConfig.getEncoding must_== fluentConfig.getEncoding
+    resultingConfig.getSchemas must_== fluentConfig.getSchemas
+    resultingConfig.getTable must_== fluentConfig.getTable
+    resultingConfig.getTarget must_== fluentConfig.getTarget
+    resultingConfig.isPlaceholderReplacement must_== fluentConfig.isPlaceholderReplacement
+    resultingConfig.getPlaceholders must_== fluentConfig.getPlaceholders
+    resultingConfig.getPlaceholderPrefix must_== fluentConfig.getPlaceholderPrefix
+    resultingConfig.getPlaceholderSuffix must_== fluentConfig.getPlaceholderSuffix
+    resultingConfig.getSqlMigrationPrefix must_== fluentConfig.getSqlMigrationPrefix
+    resultingConfig.getRepeatableSqlMigrationPrefix must_== fluentConfig.getRepeatableSqlMigrationPrefix
+    resultingConfig.getSqlMigrationSeparator must_== fluentConfig.getSqlMigrationSeparator
+    resultingConfig.getSqlMigrationSuffixes must_== fluentConfig.getSqlMigrationSuffixes
+    resultingConfig.getConnectRetries must_== fluentConfig.getConnectRetries
+    resultingConfig.getInitSql must_== fluentConfig.getInitSql
+    resultingConfig.getBaselineVersion must_== fluentConfig.getBaselineVersion
+    resultingConfig.getBaselineDescription must_== fluentConfig.getBaselineDescription
+    resultingConfig.isBaselineOnMigrate must_== fluentConfig.isBaselineOnMigrate
+    resultingConfig.isOutOfOrder must_== fluentConfig.isOutOfOrder
+    resultingConfig.getCallbacks must_== fluentConfig.getCallbacks
+    resultingConfig.isSkipDefaultCallbacks must_== fluentConfig.isSkipDefaultCallbacks
+    resultingConfig.getResolvers must_== fluentConfig.getResolvers
+    resultingConfig.isSkipDefaultResolvers must_== fluentConfig.isSkipDefaultResolvers
   }
 
   def extractDataSourceData(ds: DataSource): Option[(String, String, String)] =
