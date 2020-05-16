@@ -20,8 +20,12 @@ package config {
   import org.flywaydb.core.api.resolver.MigrationResolver
   import org.flywaydb.core.api.{Location, MigrationVersion}
   import cats.syntax.all._
+  import org.flywaydb.core.api.migration.JavaMigration
+
+  final case class Config[F[_]](config: F[Configuration])
 
   object ConfigBuilder {
+
     def impl[F[_]](
         implicit F: Sync[F]
     ): ConfigBuilder[F] = Kleisli.ask[F, FluentConfiguration]
@@ -102,6 +106,9 @@ package config {
     def table[F[_]: Sync](table: String): Endo[F] =
       _.updateConf(_.table(table))
 
+    def tablespace[F[_]: Sync](tablespace: String): Endo[F] =
+      _.updateConf(_.tablespace(tablespace))
+
     def target[F[_]: Sync](target: MigrationVersion): Endo[F] =
       _.updateConf(_.target(target))
 
@@ -134,6 +141,9 @@ package config {
 
     def sqlMigrationSuffixes[F[_]: Sync](sqlMigrationSuffixes: String*): Endo[F] =
       _.updateConf(_.sqlMigrationSuffixes(sqlMigrationSuffixes: _*))
+
+    def javaMigrations[F[_]: Sync](javaMigrations: JavaMigration*): Endo[F] =
+      _.updateConf(_.javaMigrations(javaMigrations: _*))
 
     def connectRetries[F[_]: Sync](connectRetries: Int): Endo[F] =
       _.updateConf(_.connectRetries(connectRetries))
@@ -198,13 +208,18 @@ package config {
     def envVars[F[_]: Sync](): Endo[F] =
       _.updateConf(_.envVars())
 
-    def build[F[_]: Sync](s: ConfigBuilder[F]): F[Configuration] =
-      s.run(new FluentConfiguration()).widen[Configuration]
+    def build[F[_]: Sync](s: ConfigBuilder[F]): Config[F] =
+      Config[F](s.run(new FluentConfiguration()).widen[Configuration])
+
+    def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): Config[F] =
+      Config[F](s.run(new FluentConfiguration(classLoader)).widen[Configuration])
   }
 
   package object syntax extends ConfigBuilderSyntax
 
   package syntax {
+
+    import org.flywaydb.core.api.migration.JavaMigration
 
     trait ConfigBuilderSyntax {
       implicit def configBuilderSyntax[F[_]](s: ConfigBuilder[F]): ConfigConfigBuilderOps[F] =
@@ -332,6 +347,11 @@ package config {
       ): ConfigBuilder[F] =
         ConfigBuilder.table(table).apply(s)
 
+      def tablespace(tablespace: String)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
+        ConfigBuilder.tablespace(tablespace).apply(s)
+
       def target(target: MigrationVersion)(
           implicit F: Sync[F]
       ): ConfigBuilder[F] =
@@ -386,6 +406,11 @@ package config {
           implicit F: Sync[F]
       ): ConfigBuilder[F] =
         ConfigBuilder.sqlMigrationSuffixes(sqlMigrationSuffixes: _*).apply(s)
+
+      def javaMigrations(javaMigrations: JavaMigration*)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
+        ConfigBuilder.javaMigrations(javaMigrations: _*).apply(s)
 
       def connectRetries(connectRetries: Int)(
           implicit F: Sync[F]
@@ -499,8 +524,13 @@ package config {
 
       def build(
           implicit F: Sync[F]
-      ): F[Configuration] =
+      ): Config[F] =
         ConfigBuilder.build(s)
+
+      def build(classLoader: ClassLoader)(
+          implicit F: Sync[F]
+      ): Config[F] =
+        ConfigBuilder.build(s, classLoader)
     }
 
   }

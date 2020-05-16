@@ -53,7 +53,7 @@ object Arbitraries {
     }
   }
 
-  implicit val arbMigrationType: Arbitrary[MigrationType] = Arbitrary(Gen.oneOf(MigrationType.values()))
+  implicit val arbMigrationType: Arbitrary[MigrationType] = Arbitrary(Gen.oneOf(MigrationType.values().toList))
 
   implicit val arbMigrationExecutor: Arbitrary[MigrationExecutor]        = Arbitrary {
     for {
@@ -216,7 +216,7 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
       .locations(fluentConfig.getLocations.toList)
       .encoding(fluentConfig.getEncoding)
       .defaultSchema(fluentConfig.getDefaultSchema)
-      .schemas(fluentConfig.getSchemas: _*)
+      .schemas(fluentConfig.getSchemas.toList: _*)
       .table(fluentConfig.getTable)
       .tablespace(fluentConfig.getTablespace)
       .target(fluentConfig.getTarget)
@@ -227,20 +227,20 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
       .sqlMigrationPrefix(fluentConfig.getSqlMigrationPrefix)
       .repeatableSqlMigrationPrefix(fluentConfig.getRepeatableSqlMigrationPrefix)
       .sqlMigrationSeparator(fluentConfig.getSqlMigrationSeparator)
-      .sqlMigrationSuffixes(fluentConfig.getSqlMigrationSuffixes: _*)
-      .javaMigrations(fluentConfig.getJavaMigrations: _*)
+      .sqlMigrationSuffixes(fluentConfig.getSqlMigrationSuffixes.toList: _*)
+      .javaMigrations(fluentConfig.getJavaMigrations.toList: _*)
       .connectRetries(fluentConfig.getConnectRetries)
       .initSql(fluentConfig.getInitSql)
       .baselineVersion(fluentConfig.getBaselineVersion)
       .baselineDescription(fluentConfig.getBaselineDescription)
       .baselineOnMigrate(fluentConfig.isBaselineOnMigrate)
       .outOfOrder(fluentConfig.isOutOfOrder)
-      .callbacks(fluentConfig.getCallbacks: _*)
+      .callbacks(fluentConfig.getCallbacks.toList: _*)
       .skipDefaultCallbacks(fluentConfig.isSkipDefaultCallbacks)
-      .resolvers(fluentConfig.getResolvers: _*)
+      .resolvers(fluentConfig.getResolvers.toList: _*)
       .skipDefaultResolvers(fluentConfig.isSkipDefaultResolvers)
 
-    val resultingConfig = configBuilder.build(fluentConfig.getClassLoader).unsafeRunSync()
+    val resultingConfig = configBuilder.build(fluentConfig.getClassLoader).config.unsafeRunSync()
 
     resultingConfig.getClassLoader must_== fluentConfig.getClassLoader
 

@@ -22,7 +22,10 @@ package config {
   import cats.syntax.all._
   import org.flywaydb.core.api.migration.JavaMigration
 
+  final case class Config[F[_]](config: F[Configuration])
+
   object ConfigBuilder {
+
     def impl[F[_]](
         implicit F: Sync[F]
     ): ConfigBuilder[F] = Kleisli.ask[F, FluentConfiguration]
@@ -205,11 +208,11 @@ package config {
     def envVars[F[_]: Sync](): Endo[F] =
       _.updateConf(_.envVars())
 
-    def build[F[_]: Sync](s: ConfigBuilder[F]): F[Configuration] =
-      s.run(new FluentConfiguration()).widen[Configuration]
+    def build[F[_]: Sync](s: ConfigBuilder[F]): Config[F] =
+      Config[F](s.run(new FluentConfiguration()).widen[Configuration])
 
-    def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): F[Configuration] =
-      s.run(new FluentConfiguration(classLoader)).widen[Configuration]
+    def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): Config[F] =
+      Config[F](s.run(new FluentConfiguration(classLoader)).widen[Configuration])
   }
 
   package object syntax extends ConfigBuilderSyntax
@@ -521,12 +524,12 @@ package config {
 
       def build(
           implicit F: Sync[F]
-      ): F[Configuration] =
+      ): Config[F] =
         ConfigBuilder.build(s)
 
       def build(classLoader: ClassLoader)(
           implicit F: Sync[F]
-      ): F[Configuration] =
+      ): Config[F] =
         ConfigBuilder.build(s, classLoader)
     }
 
