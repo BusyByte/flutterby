@@ -204,6 +204,9 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
       .dataSource(f.jdbcUrl, f.username, f.password)
       .group(fluentConfig.isGroup)
       .installedBy(fluentConfig.getInstalledBy)
+      .mixed(fluentConfig.isMixed)
+      .ignoreMissingMigrations(fluentConfig.isIgnoreMissingMigrations)
+      .ignoreIgnoredMigrations(fluentConfig.isIgnoreIgnoredMigrations)
 
     val finalConfig = configBuilder.build(fluentConfig.getClassLoader).unsafeRunSync()
 
@@ -215,6 +218,9 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
 
     finalConfig.isGroup must_== fluentConfig.isGroup
     finalConfig.getInstalledBy must_== fluentConfig.getInstalledBy
+    finalConfig.isMixed must_== fluentConfig.isMixed
+    finalConfig.isIgnoreMissingMigrations must_== fluentConfig.isIgnoreMissingMigrations
+    finalConfig.isIgnoreIgnoredMigrations must_== fluentConfig.isIgnoreIgnoredMigrations
   }
 
   def extractDataSourceData(ds: DataSource): Option[(String, String, String)] =
