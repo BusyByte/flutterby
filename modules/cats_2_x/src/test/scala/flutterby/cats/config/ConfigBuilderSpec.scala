@@ -1,12 +1,34 @@
 package flutterby.cats.config
 
-import java.nio.charset.StandardCharsets
+import java.io.PrintWriter
+import java.nio.charset.{Charset, StandardCharsets}
+import java.sql.Connection
 import java.util
+import java.util.logging.Logger
 
 import cats.effect.IO
+import flutterby.cats.config.TestData.{
+  Callback1,
+  Callback2,
+  Callback3,
+  JdbcUrl,
+  JdbcUrlDatasource,
+  MigrationResolver1,
+  MigrationResolver2,
+  MigrationResolver3,
+  Password,
+  StringCallback,
+  StringEncoding,
+  StringLocation,
+  StringMigrationResolver,
+  StringVersion,
+  TestDataSource,
+  TestDataSourceImpl,
+  Username
+}
 import flutterby.core.jdk.CollectionConversions
 import javax.sql.DataSource
-import org.flywaydb.core.api.{executor, resolver, MigrationType, MigrationVersion}
+import org.flywaydb.core.api.{callback, executor, resolver, Location, MigrationType, MigrationVersion}
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.flywaydb.core.api.executor.MigrationExecutor
 import org.flywaydb.core.api.migration.{Context, JavaMigration}
@@ -15,47 +37,136 @@ import org.flywaydb.core.internal.jdbc.DriverDataSource
 import org.scalacheck.{Arbitrary, Gen}
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
+import org.flywaydb.core.api.callback.{Callback, Event}
 
 import scala.util.{Failure, Success, Try}
 
-object Generators  {
-  val genMigrationVersionString = Gen
-    .oneOf[String](Gen.const(null), Gen.const("current"), Gen.const("latest"), Gen.posNum[Int].map(_.toString))
+object TestData    {
+  final case class StringLocation(value: String) extends AnyVal
 
-  val genJdbcUrl = for {
-    dbName <- Gen.alphaNumStr.suchThat(v => Option(v).exists(_.trim.length > 0))
-  } yield s"jdbc:postgresql://127.0.0.1:5432/$dbName"
+  final case class StringEncoding(value: String) extends AnyVal
+
+  final case class StringVersion(value: String) extends AnyVal
+
+  final case class StringCallback(value: String) extends AnyVal
+
+  final class Callback1                                   extends Callback {
+    override def supports(event: Event, context: callback.Context): Boolean               = false
+    override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
+    override def handle(event: Event, context: callback.Context): Unit                    = ()
+  }
+  final class Callback2                                   extends Callback {
+    override def supports(event: Event, context: callback.Context): Boolean               = false
+    override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
+    override def handle(event: Event, context: callback.Context): Unit                    = ()
+  }
+  final class Callback3                                   extends Callback {
+    override def supports(event: Event, context: callback.Context): Boolean               = false
+    override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
+    override def handle(event: Event, context: callback.Context): Unit                    = ()
+  }
+
+  final case class StringMigrationResolver(value: String) extends AnyVal
+
+  final class MigrationResolver1           extends MigrationResolver {
+    override def resolveMigrations(context: resolver.Context): util.Collection[ResolvedMigration] =
+      CollectionConversions.toJavaCollection(List.empty)
+  }
+  final class MigrationResolver2           extends MigrationResolver {
+    override def resolveMigrations(context: resolver.Context): util.Collection[ResolvedMigration] =
+      CollectionConversions.toJavaCollection(List.empty)
+  }
+  final class MigrationResolver3           extends MigrationResolver {
+    override def resolveMigrations(context: resolver.Context): util.Collection[ResolvedMigration] =
+      CollectionConversions.toJavaCollection(List.empty)
+  }
+
+  final case class JdbcUrl(value: String)  extends AnyVal
+  final case class Username(value: String) extends AnyVal
+  final case class Password(value: String) extends AnyVal
+
+  sealed trait TestDataSource
+  final case class JdbcUrlDatasource(url: JdbcUrl, username: Username, password: Password) extends TestDataSource
+
+  final object TestDataSourceImpl extends DataSource with TestDataSource {
+    val jdcbUrl                                                                = "TestDataSourceImplUrl"
+    val username                                                               = "TestUsername"
+    val password                                                               = "TestPassword"
+    override def getConnection: Connection                                     = null
+    override def getConnection(username: String, password: String): Connection = null
+    override def unwrap[T](iface: Class[T]): T                                 = iface.newInstance()
+    override def isWrapperFor(iface: Class[_]): Boolean                        = false
+    override def getLogWriter: PrintWriter                                     = new PrintWriter(System.out)
+    override def setLogWriter(out: PrintWriter): Unit                          = ()
+    override def setLoginTimeout(seconds: Int): Unit                           = ()
+    override def getLoginTimeout: Int                                          = 2
+    override def getParentLogger: Logger                                       = Logger.getGlobal
+  }
 }
 
 object Arbitraries {
 
-  implicit val arbMigrationVersion: Arbitrary[MigrationVersion] = Arbitrary(
-    Generators.genMigrationVersionString
-      .map(MigrationVersion.fromVersion)
-  )
-
-  implicit val arbJavaMigration: Arbitrary[JavaMigration] = Arbitrary {
+  implicit val arbJdbcUrl: Arbitrary[JdbcUrl]   = Arbitrary {
     for {
-      version              <- Arbitrary.arbitrary[MigrationVersion]
-      description          <- Gen.asciiPrintableStr
-      checksum             <- Gen.posNum[Int]
-      undo                 <- Arbitrary.arbitrary[Boolean]
-      executeInTransaction <- Arbitrary.arbitrary[Boolean]
-      migrateResult        <- Gen
-                         .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
-    } yield new JavaMigration {
-      override def getVersion: MigrationVersion     = version
-      override def getDescription: String           = description
-      override def getChecksum: Integer             = checksum
-      override def isUndo: Boolean                  = undo
-      override def canExecuteInTransaction: Boolean = executeInTransaction
-      override def migrate(context: Context): Unit  = migrateResult.get
+      dbName <- Gen.alphaNumStr.suchThat(v => Option(v).exists(_.trim.length > 0))
+    } yield JdbcUrl(s"jdbc:postgresql://127.0.0.1:5432/$dbName")
+  }
+
+  implicit val arbUsername: Arbitrary[Username] =
+    Arbitrary(Gen.asciiPrintableStr.map(Username.apply))
+
+  implicit val arbPassword: Arbitrary[Password] =
+    Arbitrary(Gen.asciiPrintableStr.map(Password.apply))
+
+  implicit val arbJdbcUrlDatasource: Arbitrary[JdbcUrlDatasource]             = Arbitrary {
+    for {
+      jdbcUrl  <- Arbitrary.arbitrary[JdbcUrl]
+      username <- Arbitrary.arbitrary[Username]
+      password <- Arbitrary.arbitrary[Password]
+    } yield JdbcUrlDatasource(jdbcUrl, username, password)
+  }
+
+  implicit val arbStringMigrationResolver: Arbitrary[StringMigrationResolver] = Arbitrary {
+    for {
+      migrator <-
+        Gen.oneOf(classOf[MigrationResolver1], classOf[MigrationResolver2], classOf[MigrationResolver3]).map(_.getName)
+    } yield StringMigrationResolver(migrator)
+  }
+
+  implicit val arbStringCallback: Arbitrary[StringCallback]                   = Arbitrary {
+    for {
+      callback <- Gen.oneOf(classOf[Callback1], classOf[Callback2], classOf[Callback3]).map(_.getName)
+    } yield StringCallback(callback)
+  }
+
+  implicit val arbCallback: Arbitrary[Callback]                               = Arbitrary {
+    for {
+      supportsResult               <- Arbitrary.arbitrary[Boolean]
+      canHandleInTransactionResult <- Arbitrary.arbitrary[Boolean]
+    } yield new Callback {
+      override def supports(event: Event, context: callback.Context): Boolean               = supportsResult
+      override def canHandleInTransaction(event: Event, context: callback.Context): Boolean =
+        canHandleInTransactionResult
+      override def handle(event: Event, context: callback.Context): Unit                    = ()
     }
   }
 
-  implicit val arbMigrationType: Arbitrary[MigrationType] = Arbitrary(Gen.oneOf(MigrationType.values().toList))
+  implicit val arbStringVersion: Arbitrary[StringVersion]                     = Arbitrary {
+    for {
+      target <-
+        Gen.oneOf[String](Gen.const(null), Gen.const("current"), Gen.const("latest"), Gen.posNum[Int].map(_.toString))
+    } yield StringVersion(target)
+  }
 
-  implicit val arbMigrationExecutor: Arbitrary[MigrationExecutor]        = Arbitrary {
+  implicit val arbMigrationVersion: Arbitrary[MigrationVersion]               = Arbitrary {
+    for {
+      version <- Arbitrary.arbitrary[StringVersion]
+    } yield MigrationVersion.fromVersion(version.value)
+  }
+
+  implicit val arbMigrationType: Arbitrary[MigrationType]                     = Arbitrary(Gen.oneOf(MigrationType.values().toList))
+
+  implicit val arbMigrationExecutor: Arbitrary[MigrationExecutor] = Arbitrary {
     for {
       executeResult        <- Gen
                          .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
@@ -67,7 +178,7 @@ object Arbitraries {
     }
   }
 
-  implicit val arbResolvedMigration: Arbitrary[ResolvedMigration]        = Arbitrary {
+  implicit val arbResolvedMigration: Arbitrary[ResolvedMigration] = Arbitrary {
     for {
       version                                    <- Arbitrary.arbitrary[MigrationVersion]
       description                                <- Gen.asciiPrintableStr
@@ -93,7 +204,7 @@ object Arbitraries {
     }
   }
 
-  implicit val arbMigrationResolver: Arbitrary[MigrationResolver]        = Arbitrary {
+  implicit val arbMigrationResolver: Arbitrary[MigrationResolver] = Arbitrary {
     for {
       resolvedMigrations <- Gen.listOf(Arbitrary.arbitrary[ResolvedMigration])
     } yield new MigrationResolver {
@@ -102,24 +213,102 @@ object Arbitraries {
     }
   }
 
-  final case class FluentConfigWithInputs(
-      fluentConfiguration: FluentConfiguration,
-      jdbcUrl: String,
-      username: String,
-      password: String
-  )
-  implicit val arbFluentConfiguration: Arbitrary[FluentConfigWithInputs] =
+  implicit val arbStringLocation: Arbitrary[StringLocation]       = Arbitrary {
+    for {
+      locationPrefix <- Gen.oneOf("filesystem:", "classpath:")
+      location       <- Gen.alphaNumStr
+    } yield StringLocation(locationPrefix + location)
+  }
+
+  implicit val arbLocation: Arbitrary[Location]                   = Arbitrary {
+    for {
+      loc <- Arbitrary.arbitrary[StringLocation]
+    } yield new Location(loc.value)
+  }
+
+  implicit val arbCharsetEncoding: Arbitrary[Charset]             = Arbitrary {
+    for {
+      encoding <- Gen.oneOf(StandardCharsets.UTF_8, StandardCharsets.US_ASCII, StandardCharsets.ISO_8859_1)
+    } yield encoding
+  }
+
+  implicit val arbStringEncoding: Arbitrary[StringEncoding]       = Arbitrary {
+    for {
+      encoding <- Arbitrary.arbitrary[Charset].map(_.name())
+    } yield StringEncoding(encoding)
+  }
+
+  implicit val arbJavaMigration: Arbitrary[JavaMigration]         = Arbitrary {
+    for {
+      version              <- Arbitrary.arbitrary[MigrationVersion]
+      description          <- Gen.asciiPrintableStr
+      checksum             <- Gen.posNum[Int]
+      undo                 <- Arbitrary.arbitrary[Boolean]
+      executeInTransaction <- Arbitrary.arbitrary[Boolean]
+      migrateResult        <- Gen
+                         .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
+    } yield new JavaMigration {
+      override def getVersion: MigrationVersion     = version
+      override def getDescription: String           = description
+      override def getChecksum: Integer             = checksum
+      override def isUndo: Boolean                  = undo
+      override def canExecuteInTransaction: Boolean = executeInTransaction
+      override def migrate(context: Context): Unit  = migrateResult.get
+    }
+  }
+
+  type FluentEndo = FluentConfiguration => FluentConfiguration
+
+  final case class FluentConfigurationWithDatasource(fluentConfiguration: FluentConfiguration, ds: TestDataSource)
+
+  implicit val arbFluentConfiguration: Arbitrary[FluentConfigurationWithDatasource] =
     Arbitrary {
       for {
-        locationPrefix               <- Gen.oneOf("filesystem:", "classpath:")
-        location                     <- Gen.alphaNumStr
-        fullLocation                  = locationPrefix + location
-        encoding                     <- Gen.oneOf(StandardCharsets.UTF_8, StandardCharsets.US_ASCII, StandardCharsets.ISO_8859_1)
+        locationsEndo                <- Gen.oneOf(
+                           Gen
+                             .listOf(Arbitrary.arbitrary[StringLocation])
+                             .map[FluentEndo](l => c => c.locations(l.map(_.value): _*)),
+                           Gen.listOf(Arbitrary.arbitrary[Location]).map[FluentEndo](l => c => c.locations(l: _*))
+                         )
+        encodingEndo                 <- Gen.oneOf(
+                          Arbitrary.arbitrary[StringEncoding].map[FluentEndo](e => c => c.encoding(e.value)),
+                          Arbitrary.arbitrary[Charset].map[FluentEndo](e => c => c.encoding(e))
+                        )
+        targetEndo                   <- Gen.oneOf(
+                        Arbitrary.arbitrary[StringVersion].map[FluentEndo](e => c => c.target(e.value)),
+                        Arbitrary.arbitrary[MigrationVersion].map[FluentEndo](e => c => c.target(e))
+                      )
+        baselineVersionEndo          <- Gen.oneOf(
+                                 Arbitrary.arbitrary[StringVersion].map[FluentEndo](e => c => c.target(e.value)),
+                                 Arbitrary.arbitrary[MigrationVersion].map[FluentEndo](e => c => c.target(e))
+                               )
+        callbacksEndo                <- Gen.oneOf(
+                           Gen
+                             .listOf(Arbitrary.arbitrary[StringCallback])
+                             .map[FluentEndo](l => c => c.callbacks(l.map(_.value): _*)),
+                           Gen.listOf(Arbitrary.arbitrary[Callback]).map[FluentEndo](l => c => c.callbacks(l: _*))
+                         )
+        resolversEndo                <- Gen.oneOf(
+                           Gen
+                             .listOf(Arbitrary.arbitrary[StringMigrationResolver])
+                             .map[FluentEndo](l => c => c.resolvers(l.map(_.value): _*)),
+                           Gen
+                             .listOf(Arbitrary.arbitrary[MigrationResolver])
+                             .map[FluentEndo](l => c => c.resolvers(l: _*))
+                         )
+        dataSource                   <- Gen.oneOf[TestDataSource](
+                        Arbitrary.arbitrary[JdbcUrlDatasource],
+                        Gen.const(TestDataSourceImpl)
+                      )
+        dataSourceEndo                = dataSource match {
+                           case JdbcUrlDatasource(url, username, password) =>
+                             (c: FluentConfiguration) => c.dataSource(url.value, username.value, password.value)
+                           case t: TestDataSourceImpl.type                 => (c: FluentConfiguration) => c.dataSource(t)
+                         }
         defaultSchema                <- Gen.alphaNumStr
         schemas                      <- Gen.listOf(Gen.alphaNumStr)
         table                        <- Gen.alphaNumStr
         tableSpace                   <- Gen.alphaNumStr
-        target                       <- Generators.genMigrationVersionString
         isPlaceholderReplacement     <- Arbitrary.arbitrary[Boolean]
         placeholders                 <- Gen.mapOf(Gen.alphaNumStr.flatMap(a => Gen.alphaNumStr.map(b => (a, b))))
         placeholderPrefix            <- Gen.alphaNumStr.suchThat(v => Option(v).exists(_.trim.length > 0))
@@ -137,71 +326,75 @@ object Arbitraries {
         validateOnMigrate            <- Arbitrary.arbitrary[Boolean]
         cleanOnValidationError       <- Arbitrary.arbitrary[Boolean]
         cleanDisabled                <- Arbitrary.arbitrary[Boolean]
-        baselineVersion              <- Generators.genMigrationVersionString
         baselineDescription          <- Gen.asciiPrintableStr
         baselineOnMigrate            <- Arbitrary.arbitrary[Boolean]
+        skipDefaultCallbacks         <- Arbitrary.arbitrary[Boolean]
         outOfOrder                   <- Arbitrary.arbitrary[Boolean]
-        resolvers                    <- Gen.listOf(Arbitrary.arbitrary[MigrationResolver])
         skipDefaultResolvers         <- Arbitrary.arbitrary[Boolean]
-        jdbcUrl                      <- Generators.genJdbcUrl
-        username                     <- Gen.asciiPrintableStr
-        password                     <- Gen.asciiPrintableStr
         connectRetries               <- Gen.chooseNum[Int](0, Int.MaxValue)
         initSql                      <- Gen.asciiPrintableStr
         mixed                        <- Arbitrary.arbitrary[Boolean]
         installedBy                  <- Gen.asciiPrintableStr
         group                        <- Arbitrary.arbitrary[Boolean]
         licenseKey                   <- Gen.asciiPrintableStr
-        f                             = new FluentConfiguration(Thread.currentThread.getContextClassLoader) // TODO: handle other variations
-              .locations(fullLocation)
-              .encoding(encoding)
-              .defaultSchema(defaultSchema)
-              .schemas(schemas: _*)
-              .table(table)
-              .tablespace(tableSpace)
-              .target(target)
-              .placeholderReplacement(isPlaceholderReplacement)
-              .placeholders(CollectionConversions.toJavaMap(placeholders))
-              .placeholderPrefix(placeholderPrefix)
-              .placeholderSuffix(placeholderSuffix)
-              .sqlMigrationPrefix(sqlMigrationPrefix)
-              .repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix)
-              .sqlMigrationSeparator(sqlMigrationSeparator)
-              .sqlMigrationSuffixes(sqlMigrationSuffixes: _*)
-              .javaMigrations(javaMigrations: _*)
-              .ignoreMissingMigrations(ignoreMissingMigrations)
-              .ignoreIgnoredMigrations(ignoreIgnoredMigrations)
-              .ignorePendingMigrations(ignorePendingMigrations)
-              .ignoreFutureMigrations(ignoreFutureMigrations)
-              .validateMigrationNaming(validateMigrationNaming)
-              .validateOnMigrate(validateOnMigrate)
-              .cleanOnValidationError(cleanOnValidationError)
-              .cleanDisabled(cleanDisabled)
-              .baselineVersion(baselineVersion)
-              .baselineDescription(baselineDescription)
-              .baselineOnMigrate(baselineOnMigrate)
-              .outOfOrder(outOfOrder)
-              .resolvers(resolvers: _*)
-              .skipDefaultResolvers(skipDefaultResolvers)
-              .dataSource(jdbcUrl, username, password)
-              .connectRetries(connectRetries)
-              .initSql(initSql)
-              .mixed(mixed)
-              .installedBy(installedBy)
-              .group(group)
-              .licenseKey(licenseKey)
-      } yield FluentConfigWithInputs(f, jdbcUrl, username, password)
+        f1                            = new FluentConfiguration(Thread.currentThread.getContextClassLoader)
+               .defaultSchema(defaultSchema)
+               .schemas(schemas: _*)
+               .table(table)
+               .tablespace(tableSpace)
+               .placeholderReplacement(isPlaceholderReplacement)
+               .placeholders(CollectionConversions.toJavaMap(placeholders))
+               .placeholderPrefix(placeholderPrefix)
+               .placeholderSuffix(placeholderSuffix)
+               .sqlMigrationPrefix(sqlMigrationPrefix)
+               .repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix)
+               .sqlMigrationSeparator(sqlMigrationSeparator)
+               .sqlMigrationSuffixes(sqlMigrationSuffixes: _*)
+               .javaMigrations(javaMigrations: _*)
+               .ignoreMissingMigrations(ignoreMissingMigrations)
+               .ignoreIgnoredMigrations(ignoreIgnoredMigrations)
+               .ignorePendingMigrations(ignorePendingMigrations)
+               .ignoreFutureMigrations(ignoreFutureMigrations)
+               .validateMigrationNaming(validateMigrationNaming)
+               .validateOnMigrate(validateOnMigrate)
+               .cleanOnValidationError(cleanOnValidationError)
+               .cleanDisabled(cleanDisabled)
+               .baselineDescription(baselineDescription)
+               .baselineOnMigrate(baselineOnMigrate)
+               .skipDefaultCallbacks(skipDefaultCallbacks)
+               .outOfOrder(outOfOrder)
+               .skipDefaultResolvers(skipDefaultResolvers)
+               .connectRetries(connectRetries)
+               .initSql(initSql)
+               .mixed(mixed)
+               .installedBy(installedBy)
+               .group(group)
+               .licenseKey(licenseKey)
+        f2                            = locationsEndo(f1)
+        f3                            = encodingEndo(f2)
+        f4                            = targetEndo(f3)
+        f5                            = baselineVersionEndo(f4)
+        f6                            = callbacksEndo(f5)
+        f7                            = resolversEndo(f6)
+        f8                            = dataSourceEndo(f7)
+      } yield FluentConfigurationWithDatasource(f8, dataSource)
     }
 }
 
 class ConfigBuilderSpec extends Specification with ScalaCheck {
   import Arbitraries._
-  "must have be the same" in prop { (f: FluentConfigWithInputs) =>
-    val fluentConfig                     = f.fluentConfiguration
+  "must have be the same" in prop { (f: FluentConfigurationWithDatasource) =>
+    val fluentConfig = f.fluentConfiguration
     import _root_.flutterby.cats.syntax.all._
-    val configBuilder: ConfigBuilder[IO] = ConfigBuilder
+
+    val dsOp: ConfigBuilder[IO] => ConfigBuilder[IO] = f.ds match {
+      case JdbcUrlDatasource(url, username, password) =>
+        (c: ConfigBuilder[IO]) => c.dataSource(url.value, username.value, password.value)
+      case t: TestDataSourceImpl.type                 => (c: ConfigBuilder[IO]) => c.dataSource(t)
+    }
+
+    val cb: ConfigBuilder[IO]                        = ConfigBuilder
       .impl[IO]
-      .dataSource(f.jdbcUrl, f.username, f.password)
       .group(fluentConfig.isGroup)
       .installedBy(fluentConfig.getInstalledBy)
       .mixed(fluentConfig.isMixed)
@@ -239,6 +432,8 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
       .skipDefaultCallbacks(fluentConfig.isSkipDefaultCallbacks)
       .resolvers(fluentConfig.getResolvers.toList: _*)
       .skipDefaultResolvers(fluentConfig.isSkipDefaultResolvers)
+
+    val configBuilder = dsOp(cb)
 
     val resultingConfig = configBuilder.build(fluentConfig.getClassLoader).config.unsafeRunSync()
 
@@ -289,7 +484,8 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
 
   def extractDataSourceData(ds: DataSource): Option[(String, String, String)] =
     ds match {
-      case dds: DriverDataSource => Some((dds.getUrl, dds.getUser, dds.getPassword))
-      case _                     => None
+      case dds: DriverDataSource      => Some((dds.getUrl, dds.getUser, dds.getPassword))
+      case t: TestDataSourceImpl.type => Some((t.jdcbUrl, t.username, t.password))
+      case _                          => None
     }
 }
