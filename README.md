@@ -18,7 +18,7 @@ Supports Scala 2.12.x
 Supports Scala 2.12.x and 2.13.x
 
 ```sbt
-"dev.shawngarner" %% "flutterby-cats_1_x" % "<release-version>"
+"dev.shawngarner" %% "flutterby-cats_2_x" % "<release-version>"
 ```
 
 ## Basic Usage
