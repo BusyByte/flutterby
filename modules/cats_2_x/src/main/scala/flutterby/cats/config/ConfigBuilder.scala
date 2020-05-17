@@ -21,7 +21,7 @@ package config {
   import org.flywaydb.core.api.{Location, MigrationVersion}
   import cats.syntax.all._
 
-  final case class Config[F[_]](config: F[Configuration])
+  sealed abstract class Config[F[_]] private[config] (val config: F[Configuration])
 
   object ConfigBuilder {
 
@@ -192,11 +192,11 @@ package config {
     def envVars[F[_]: Sync](): Endo[F] =
       _.updateConf(_.envVars())
 
-    def build[F[_]: Sync](s: ConfigBuilder[F]): Config[F] =
-      Config[F](s.run(new FluentConfiguration()).widen[Configuration])
+    def build[F[_]: Sync](s: ConfigBuilder[F]): Config[F]                           =
+      new Config[F](s.run(new FluentConfiguration()).widen[Configuration]) {}
 
     def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): Config[F] =
-      Config[F](s.run(new FluentConfiguration(classLoader)).widen[Configuration])
+      new Config[F](s.run(new FluentConfiguration(classLoader)).widen[Configuration]) {}
   }
 
   package object syntax extends ConfigBuilderSyntax
