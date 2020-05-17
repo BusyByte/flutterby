@@ -28,6 +28,7 @@ import flutterby.cats.config.TestData.{
 }
 import flutterby.core.jdk.CollectionConversions
 import javax.sql.DataSource
+import org.flywaydb.core.api.MigrationVersion.LATEST
 import org.flywaydb.core.api.{callback, executor, resolver, Location, MigrationType, MigrationVersion}
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.flywaydb.core.api.executor.MigrationExecutor
@@ -153,8 +154,11 @@ object Arbitraries {
 
   implicit val arbStringVersion: Arbitrary[StringVersion]                     = Arbitrary {
     for {
-      target <-
-        Gen.oneOf[String](Gen.const(null), Gen.const("current"), Gen.const("latest"), Gen.posNum[Int].map(_.toString))
+      target <- Gen.oneOf[String](Gen.const(null),
+                                  Gen.const("current"),
+                                  Gen.const(LATEST.getVersion),
+                                  Gen.posNum[Int].map(_.toString)
+                )
     } yield StringVersion(target)
   }
 
@@ -180,21 +184,21 @@ object Arbitraries {
 
   implicit val arbResolvedMigration: Arbitrary[ResolvedMigration] = Arbitrary {
     for {
-      version                                    <- Arbitrary.arbitrary[MigrationVersion]
-      description                                <- Gen.asciiPrintableStr
-      script                                     <- Gen.alphaNumStr
-      checksum                                   <- Gen.posNum[Int]
-      migrationType                              <- Arbitrary.arbitrary[MigrationType]
-      physicalLocation                           <- Gen.alphaNumStr
-      executor                                   <- Arbitrary.arbitrary[MigrationExecutor]
+      version          <- Arbitrary.arbitrary[MigrationVersion]
+      description      <- Gen.asciiPrintableStr
+      script           <- Gen.alphaNumStr
+      checksum         <- Gen.posNum[Int]
+      migrationType    <- Arbitrary.arbitrary[MigrationType]
+      physicalLocation <- Gen.alphaNumStr
+      executor         <- Arbitrary.arbitrary[MigrationExecutor]
     } yield new ResolvedMigration {
-      override def getVersion: MigrationVersion                                     = version
-      override def getDescription: String                                           = description
-      override def getScript: String                                                = script
-      override def getChecksum: Integer                                             = checksum
-      override def getType: MigrationType                                           = migrationType
-      override def getPhysicalLocation: String                                      = physicalLocation
-      override def getExecutor: MigrationExecutor                                   = executor
+      override def getVersion: MigrationVersion   = version
+      override def getDescription: String         = description
+      override def getScript: String              = script
+      override def getChecksum: Integer           = checksum
+      override def getType: MigrationType         = migrationType
+      override def getPhysicalLocation: String    = physicalLocation
+      override def getExecutor: MigrationExecutor = executor
     }
   }
 
@@ -326,7 +330,6 @@ object Arbitraries {
         mixed                        <- Arbitrary.arbitrary[Boolean]
         installedBy                  <- Gen.asciiPrintableStr
         group                        <- Arbitrary.arbitrary[Boolean]
-        licenseKey                   <- Gen.asciiPrintableStr
         f1                            = new FluentConfiguration(Thread.currentThread.getContextClassLoader)
                .schemas(schemas: _*)
                .table(table)
@@ -355,7 +358,6 @@ object Arbitraries {
                .mixed(mixed)
                .installedBy(installedBy)
                .group(group)
-               .licenseKey(licenseKey)
         f2                            = locationsEndo(f1)
         f3                            = encodingEndo(f2)
         f4                            = targetEndo(f3)
