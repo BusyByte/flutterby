@@ -1,0 +1,33 @@
+language: scala
+
+services:
+  - docker
+
+stages:
+  - name: test
+
+jobs:
+  include:
+    # stage="test" if no stage is specified
+    - name: test jdk11 2.13
+      scala: 2.13.0
+      jdk: openjdk11
+      script: sbt ++$TRAVIS_SCALA_VERSION test
+    - name: test jdk8 2.13
+      scala: 2.13.0
+      jdk: openjdk8
+      script: sbt ++$TRAVIS_SCALA_VERSION test
+    - name: test jdk11 2.12
+      scala: 2.12.9
+      jdk: openjdk11
+      script: sbt ++$TRAVIS_SCALA_VERSION test
+    - name: test jdk8 2.12
+      scala: 2.12.9
+      jdk: openjdk8
+      script: sbt ++$TRAVIS_SCALA_VERSION test
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.coursier/cache
+    - $HOME/.sbt
