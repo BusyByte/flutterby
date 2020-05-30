@@ -1,4 +1,4 @@
-# flutterby
+# flutterby [![Build Status](https://travis-ci.org/BusyByte/flutterby.svg?branch=master)](https://travis-ci.org/BusyByte/flutterby)
 FP Scala Wrapper for Flyway
 
 ## Installation
