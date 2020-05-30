@@ -5,11 +5,6 @@ val scala2_13V = "2.13.2"
 
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
-// check for library updates whenever the project is [re]load
-onLoad in Global := { s =>
-  "dependencyUpdates" :: s
-}
-
 lazy val `flutterby` =
   (project in file("."))
     .aggregate(`flutterby-core`, `flutterby-cats_1_x`, `flutterby-cats_2_x`)
