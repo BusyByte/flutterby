@@ -95,7 +95,7 @@ object TestData    {
     val password                                                               = "TestPassword"
     override def getConnection: Connection                                     = null
     override def getConnection(username: String, password: String): Connection = null
-    override def unwrap[T](iface: Class[T]): T                                 = iface.newInstance()
+    override def unwrap[T](iface: Class[T]): T                                 = iface.getConstructor().newInstance()
     override def isWrapperFor(iface: Class[_]): Boolean                        = false
     override def getLogWriter: PrintWriter                                     = new PrintWriter(System.out)
     override def setLogWriter(out: PrintWriter): Unit                          = ()
