@@ -54,7 +54,7 @@ object MigrationVersion {
     }
 }
 
-sealed abstract class MigrationInfo(private val m: FlywayMigrationInfo)       extends Comparable[MigrationInfo] {
+sealed abstract class MigrationInfo(private val m: FlywayMigrationInfo) extends Comparable[MigrationInfo] {
   def `type`: FlywayMigrationType
   def checksum: Integer
   def version: MigrationVersion
@@ -66,7 +66,7 @@ sealed abstract class MigrationInfo(private val m: FlywayMigrationInfo)       ex
   def installedRank: Option[Int]
   def executionTime: Option[FiniteDuration]
 }
-object MigrationInfo    {
+object MigrationInfo {
   import scala.concurrent.duration._
   def fromFlyway(m: FlywayMigrationInfo): MigrationInfo =
     new MigrationInfo(m) {

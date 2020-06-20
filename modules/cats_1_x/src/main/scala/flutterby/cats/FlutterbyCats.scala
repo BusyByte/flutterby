@@ -7,7 +7,7 @@ import org.flywaydb.core.api.{MigrationInfoService => FlywayMigrationInfoService
 import cats.implicits._
 import flutterby.cats.config.Config
 
-object FlutterbyCats        {
+object FlutterbyCats {
   def fromConfig[F[_]](config: Config[F])(
       implicit F: Sync[F]
   ): F[Flutterby[F]] =

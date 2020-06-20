@@ -42,7 +42,7 @@ import org.flywaydb.core.api.callback.{Callback, Event}
 
 import scala.util.{Failure, Success, Try}
 
-object TestData    {
+object TestData {
   final case class StringLocation(value: String) extends AnyVal
 
   final case class StringEncoding(value: String) extends AnyVal
@@ -51,17 +51,17 @@ object TestData    {
 
   final case class StringCallback(value: String) extends AnyVal
 
-  final class Callback1                                   extends Callback {
+  final class Callback1 extends Callback {
     override def supports(event: Event, context: callback.Context): Boolean               = false
     override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
     override def handle(event: Event, context: callback.Context): Unit                    = ()
   }
-  final class Callback2                                   extends Callback {
+  final class Callback2 extends Callback {
     override def supports(event: Event, context: callback.Context): Boolean               = false
     override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
     override def handle(event: Event, context: callback.Context): Unit                    = ()
   }
-  final class Callback3                                   extends Callback {
+  final class Callback3 extends Callback {
     override def supports(event: Event, context: callback.Context): Boolean               = false
     override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
     override def handle(event: Event, context: callback.Context): Unit                    = ()
@@ -69,15 +69,15 @@ object TestData    {
 
   final case class StringMigrationResolver(value: String) extends AnyVal
 
-  final class MigrationResolver1           extends MigrationResolver {
+  final class MigrationResolver1 extends MigrationResolver {
     override def resolveMigrations(context: resolver.Context): util.Collection[ResolvedMigration] =
       CollectionConversions.toJavaCollection(List.empty)
   }
-  final class MigrationResolver2           extends MigrationResolver {
+  final class MigrationResolver2 extends MigrationResolver {
     override def resolveMigrations(context: resolver.Context): util.Collection[ResolvedMigration] =
       CollectionConversions.toJavaCollection(List.empty)
   }
-  final class MigrationResolver3           extends MigrationResolver {
+  final class MigrationResolver3 extends MigrationResolver {
     override def resolveMigrations(context: resolver.Context): util.Collection[ResolvedMigration] =
       CollectionConversions.toJavaCollection(List.empty)
   }
@@ -107,7 +107,7 @@ object TestData    {
 
 object Arbitraries {
 
-  implicit val arbJdbcUrl: Arbitrary[JdbcUrl]   = Arbitrary {
+  implicit val arbJdbcUrl: Arbitrary[JdbcUrl] = Arbitrary {
     for {
       dbName <- Gen.alphaNumStr.suchThat(v => Option(v).exists(_.trim.length > 0))
     } yield JdbcUrl(s"jdbc:postgresql://127.0.0.1:5432/$dbName")
@@ -119,7 +119,7 @@ object Arbitraries {
   implicit val arbPassword: Arbitrary[Password] =
     Arbitrary(Gen.asciiPrintableStr.map(Password.apply))
 
-  implicit val arbJdbcUrlDatasource: Arbitrary[JdbcUrlDatasource]             = Arbitrary {
+  implicit val arbJdbcUrlDatasource: Arbitrary[JdbcUrlDatasource] = Arbitrary {
     for {
       jdbcUrl  <- Arbitrary.arbitrary[JdbcUrl]
       username <- Arbitrary.arbitrary[Username]
@@ -134,13 +134,13 @@ object Arbitraries {
     } yield StringMigrationResolver(migrator)
   }
 
-  implicit val arbStringCallback: Arbitrary[StringCallback]                   = Arbitrary {
+  implicit val arbStringCallback: Arbitrary[StringCallback] = Arbitrary {
     for {
       callback <- Gen.oneOf(classOf[Callback1], classOf[Callback2], classOf[Callback3]).map(_.getName)
     } yield StringCallback(callback)
   }
 
-  implicit val arbCallback: Arbitrary[Callback]                               = Arbitrary {
+  implicit val arbCallback: Arbitrary[Callback] = Arbitrary {
     for {
       supportsResult               <- Arbitrary.arbitrary[Boolean]
       canHandleInTransactionResult <- Arbitrary.arbitrary[Boolean]
@@ -152,7 +152,7 @@ object Arbitraries {
     }
   }
 
-  implicit val arbStringVersion: Arbitrary[StringVersion]                     = Arbitrary {
+  implicit val arbStringVersion: Arbitrary[StringVersion] = Arbitrary {
     for {
       target <- Gen.oneOf[String](Gen.const(null),
                                   Gen.const("current"),
@@ -162,18 +162,18 @@ object Arbitraries {
     } yield StringVersion(target)
   }
 
-  implicit val arbMigrationVersion: Arbitrary[MigrationVersion]               = Arbitrary {
+  implicit val arbMigrationVersion: Arbitrary[MigrationVersion] = Arbitrary {
     for {
       version <- Arbitrary.arbitrary[StringVersion]
     } yield MigrationVersion.fromVersion(version.value)
   }
 
-  implicit val arbMigrationType: Arbitrary[MigrationType]                     = Arbitrary(Gen.oneOf(MigrationType.values().toList))
+  implicit val arbMigrationType: Arbitrary[MigrationType] = Arbitrary(Gen.oneOf(MigrationType.values().toList))
 
   implicit val arbMigrationExecutor: Arbitrary[MigrationExecutor] = Arbitrary {
     for {
       executeResult        <- Gen
-                         .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
+                                .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
       executeInTransaction <- Arbitrary.arbitrary[Boolean]
     } yield new MigrationExecutor {
       override def execute(context: executor.Context): Unit =
@@ -211,32 +211,32 @@ object Arbitraries {
     }
   }
 
-  implicit val arbStringLocation: Arbitrary[StringLocation]       = Arbitrary {
+  implicit val arbStringLocation: Arbitrary[StringLocation] = Arbitrary {
     for {
       locationPrefix <- Gen.oneOf("filesystem:", "classpath:")
       location       <- Gen.alphaNumStr
     } yield StringLocation(locationPrefix + location)
   }
 
-  implicit val arbLocation: Arbitrary[Location]                   = Arbitrary {
+  implicit val arbLocation: Arbitrary[Location] = Arbitrary {
     for {
       loc <- Arbitrary.arbitrary[StringLocation]
     } yield new Location(loc.value)
   }
 
-  implicit val arbCharsetEncoding: Arbitrary[Charset]             = Arbitrary {
+  implicit val arbCharsetEncoding: Arbitrary[Charset] = Arbitrary {
     for {
       encoding <- Gen.oneOf(StandardCharsets.UTF_8, StandardCharsets.US_ASCII, StandardCharsets.ISO_8859_1)
     } yield encoding
   }
 
-  implicit val arbStringEncoding: Arbitrary[StringEncoding]       = Arbitrary {
+  implicit val arbStringEncoding: Arbitrary[StringEncoding] = Arbitrary {
     for {
       encoding <- Arbitrary.arbitrary[Charset].map(_.name())
     } yield StringEncoding(encoding)
   }
 
-  implicit val arbJavaMigration: Arbitrary[JavaMigration]         = Arbitrary {
+  implicit val arbJavaMigration: Arbitrary[JavaMigration] = Arbitrary {
     for {
       version              <- Arbitrary.arbitrary[MigrationVersion]
       description          <- Gen.asciiPrintableStr
@@ -244,7 +244,7 @@ object Arbitraries {
       undo                 <- Arbitrary.arbitrary[Boolean]
       executeInTransaction <- Arbitrary.arbitrary[Boolean]
       migrateResult        <- Gen
-                         .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
+                                .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
     } yield new JavaMigration {
       override def getVersion: MigrationVersion     = version
       override def getDescription: String           = description
@@ -263,46 +263,46 @@ object Arbitraries {
     Arbitrary {
       for {
         locationsEndo                <- Gen.oneOf(
-                           Gen
-                             .listOf(Arbitrary.arbitrary[StringLocation])
-                             .map[FluentEndo](l => c => c.locations(l.map(_.value): _*)),
-                           Gen.listOf(Arbitrary.arbitrary[Location]).map[FluentEndo](l => c => c.locations(l: _*))
-                         )
+                                          Gen
+                                            .listOf(Arbitrary.arbitrary[StringLocation])
+                                            .map[FluentEndo](l => c => c.locations(l.map(_.value): _*)),
+                                          Gen.listOf(Arbitrary.arbitrary[Location]).map[FluentEndo](l => c => c.locations(l: _*))
+                                        )
         encodingEndo                 <- Gen.oneOf(
-                          Arbitrary.arbitrary[StringEncoding].map[FluentEndo](e => c => c.encoding(e.value)),
-                          Arbitrary.arbitrary[Charset].map[FluentEndo](e => c => c.encoding(e))
-                        )
+                                          Arbitrary.arbitrary[StringEncoding].map[FluentEndo](e => c => c.encoding(e.value)),
+                                          Arbitrary.arbitrary[Charset].map[FluentEndo](e => c => c.encoding(e))
+                                        )
         targetEndo                   <- Gen.oneOf(
-                        Arbitrary.arbitrary[StringVersion].map[FluentEndo](e => c => c.target(e.value)),
-                        Arbitrary.arbitrary[MigrationVersion].map[FluentEndo](e => c => c.target(e))
-                      )
+                                          Arbitrary.arbitrary[StringVersion].map[FluentEndo](e => c => c.target(e.value)),
+                                          Arbitrary.arbitrary[MigrationVersion].map[FluentEndo](e => c => c.target(e))
+                                        )
         baselineVersionEndo          <- Gen.oneOf(
-                                 Arbitrary.arbitrary[StringVersion].map[FluentEndo](e => c => c.target(e.value)),
-                                 Arbitrary.arbitrary[MigrationVersion].map[FluentEndo](e => c => c.target(e))
-                               )
+                                          Arbitrary.arbitrary[StringVersion].map[FluentEndo](e => c => c.target(e.value)),
+                                          Arbitrary.arbitrary[MigrationVersion].map[FluentEndo](e => c => c.target(e))
+                                        )
         callbacksEndo                <- Gen.oneOf(
-                           Gen
-                             .listOf(Arbitrary.arbitrary[StringCallback])
-                             .map[FluentEndo](l => c => c.callbacks(l.map(_.value): _*)),
-                           Gen.listOf(Arbitrary.arbitrary[Callback]).map[FluentEndo](l => c => c.callbacks(l: _*))
-                         )
+                                          Gen
+                                            .listOf(Arbitrary.arbitrary[StringCallback])
+                                            .map[FluentEndo](l => c => c.callbacks(l.map(_.value): _*)),
+                                          Gen.listOf(Arbitrary.arbitrary[Callback]).map[FluentEndo](l => c => c.callbacks(l: _*))
+                                        )
         resolversEndo                <- Gen.oneOf(
-                           Gen
-                             .listOf(Arbitrary.arbitrary[StringMigrationResolver])
-                             .map[FluentEndo](l => c => c.resolvers(l.map(_.value): _*)),
-                           Gen
-                             .listOf(Arbitrary.arbitrary[MigrationResolver])
-                             .map[FluentEndo](l => c => c.resolvers(l: _*))
-                         )
+                                          Gen
+                                            .listOf(Arbitrary.arbitrary[StringMigrationResolver])
+                                            .map[FluentEndo](l => c => c.resolvers(l.map(_.value): _*)),
+                                          Gen
+                                            .listOf(Arbitrary.arbitrary[MigrationResolver])
+                                            .map[FluentEndo](l => c => c.resolvers(l: _*))
+                                        )
         dataSource                   <- Gen.oneOf[TestDataSource](
-                        Arbitrary.arbitrary[JdbcUrlDatasource],
-                        Gen.const(TestDataSourceImpl)
-                      )
+                                          Arbitrary.arbitrary[JdbcUrlDatasource],
+                                          Gen.const(TestDataSourceImpl)
+                                        )
         dataSourceEndo                = dataSource match {
-                           case JdbcUrlDatasource(url, username, password) =>
-                             (c: FluentConfiguration) => c.dataSource(url.value, username.value, password.value)
-                           case t: TestDataSourceImpl.type                 => (c: FluentConfiguration) => c.dataSource(t)
-                         }
+                                          case JdbcUrlDatasource(url, username, password) =>
+                                            (c: FluentConfiguration) => c.dataSource(url.value, username.value, password.value)
+                                          case t: TestDataSourceImpl.type                 => (c: FluentConfiguration) => c.dataSource(t)
+                                        }
         schemas                      <- Gen.listOf(Gen.alphaNumStr)
         table                        <- Gen.alphaNumStr
         isPlaceholderReplacement     <- Arbitrary.arbitrary[Boolean]
@@ -331,33 +331,33 @@ object Arbitraries {
         installedBy                  <- Gen.asciiPrintableStr
         group                        <- Arbitrary.arbitrary[Boolean]
         f1                            = new FluentConfiguration(Thread.currentThread.getContextClassLoader)
-               .schemas(schemas: _*)
-               .table(table)
-               .placeholderReplacement(isPlaceholderReplacement)
-               .placeholders(CollectionConversions.toJavaMap(placeholders))
-               .placeholderPrefix(placeholderPrefix)
-               .placeholderSuffix(placeholderSuffix)
-               .sqlMigrationPrefix(sqlMigrationPrefix)
-               .repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix)
-               .sqlMigrationSeparator(sqlMigrationSeparator)
-               .sqlMigrationSuffixes(sqlMigrationSuffixes: _*)
-               .ignoreMissingMigrations(ignoreMissingMigrations)
-               .ignoreIgnoredMigrations(ignoreIgnoredMigrations)
-               .ignorePendingMigrations(ignorePendingMigrations)
-               .ignoreFutureMigrations(ignoreFutureMigrations)
-               .validateOnMigrate(validateOnMigrate)
-               .cleanOnValidationError(cleanOnValidationError)
-               .cleanDisabled(cleanDisabled)
-               .baselineDescription(baselineDescription)
-               .baselineOnMigrate(baselineOnMigrate)
-               .skipDefaultCallbacks(skipDefaultCallbacks)
-               .outOfOrder(outOfOrder)
-               .skipDefaultResolvers(skipDefaultResolvers)
-               .connectRetries(connectRetries)
-               .initSql(initSql)
-               .mixed(mixed)
-               .installedBy(installedBy)
-               .group(group)
+                                          .schemas(schemas: _*)
+                                          .table(table)
+                                          .placeholderReplacement(isPlaceholderReplacement)
+                                          .placeholders(CollectionConversions.toJavaMap(placeholders))
+                                          .placeholderPrefix(placeholderPrefix)
+                                          .placeholderSuffix(placeholderSuffix)
+                                          .sqlMigrationPrefix(sqlMigrationPrefix)
+                                          .repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix)
+                                          .sqlMigrationSeparator(sqlMigrationSeparator)
+                                          .sqlMigrationSuffixes(sqlMigrationSuffixes: _*)
+                                          .ignoreMissingMigrations(ignoreMissingMigrations)
+                                          .ignoreIgnoredMigrations(ignoreIgnoredMigrations)
+                                          .ignorePendingMigrations(ignorePendingMigrations)
+                                          .ignoreFutureMigrations(ignoreFutureMigrations)
+                                          .validateOnMigrate(validateOnMigrate)
+                                          .cleanOnValidationError(cleanOnValidationError)
+                                          .cleanDisabled(cleanDisabled)
+                                          .baselineDescription(baselineDescription)
+                                          .baselineOnMigrate(baselineOnMigrate)
+                                          .skipDefaultCallbacks(skipDefaultCallbacks)
+                                          .outOfOrder(outOfOrder)
+                                          .skipDefaultResolvers(skipDefaultResolvers)
+                                          .connectRetries(connectRetries)
+                                          .initSql(initSql)
+                                          .mixed(mixed)
+                                          .installedBy(installedBy)
+                                          .group(group)
         f2                            = locationsEndo(f1)
         f3                            = encodingEndo(f2)
         f4                            = targetEndo(f3)
@@ -381,7 +381,7 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
       case t: TestDataSourceImpl.type                 => (c: ConfigBuilder[IO]) => c.dataSource(t)
     }
 
-    val cb: ConfigBuilder[IO]                        = ConfigBuilder
+    val cb: ConfigBuilder[IO] = ConfigBuilder
       .impl[IO]
       .group(fluentConfig.isGroup)
       .installedBy(fluentConfig.getInstalledBy)
