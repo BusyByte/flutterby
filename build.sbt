@@ -40,7 +40,7 @@ lazy val `flutterby-cats_2_x` = project
     )
   )
 
-lazy val commonSettings       = Seq(
+lazy val commonSettings = Seq(
   organization := "dev.shawngarner",
   libraryDependencies ++= Seq(
     Libraries.flyway,
@@ -53,11 +53,11 @@ lazy val commonSettings       = Seq(
 
 import ReleaseTransformations._
 
-lazy val contributors         = Seq(
+lazy val contributors = Seq(
   "BusyByte" -> "Shawn Garner"
 )
 
-lazy val releaseSettings      = Seq(
+lazy val releaseSettings = Seq(
   publishArtifact in Test := false,
   scmInfo := Some(
     ScmInfo(
@@ -74,7 +74,8 @@ lazy val releaseSettings      = Seq(
   pomExtra := {
     <developers>
       {
-      for ((username, name) <- contributors) yield <developer>
+      for ((username, name) <- contributors)
+        yield <developer>
       <id>{username}</id>
       <name>{name}</name>
       <url>http://github.com/{username}</url>
@@ -100,7 +101,7 @@ lazy val releaseSettings      = Seq(
   )
 )
 
-lazy val noPublishSettings    =
+lazy val noPublishSettings =
   Seq(
     publish := {},
     publishLocal := {},

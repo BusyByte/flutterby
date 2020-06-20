@@ -70,7 +70,7 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
     _  <- fb.clean()
   } yield ()
 
-  override protected def before: Any    =
+  override protected def before: Any =
     dbClean.unsafeRunSync()
 
   override protected def after: Any = {}
