@@ -219,6 +219,8 @@ package config {
 
   package syntax {
 
+    import flutterby.cats.FlutterbyCats.fromConfig
+    import flutterby.core.Flutterby
     import org.flywaydb.core.api.migration.JavaMigration
 
     trait ConfigBuilderSyntax {
@@ -531,6 +533,10 @@ package config {
           implicit F: Sync[F]
       ): Config[F] =
         ConfigBuilder.build(s, classLoader)
+
+      def load(implicit F: Sync[F]): F[Flutterby[F]]                           = FlutterbyCats.fromConfig[F](ConfigBuilder.build(s))
+      def load(classLoader: ClassLoader)(implicit F: Sync[F]): F[Flutterby[F]] =
+        fromConfig[F](ConfigBuilder.build(s, classLoader))
     }
 
   }

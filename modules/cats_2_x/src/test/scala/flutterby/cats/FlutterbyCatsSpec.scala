@@ -11,7 +11,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.{BeforeAfterAll, BeforeAfterEach}
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
 import cats.implicits._
-import flutterby.cats.config.{Config, ConfigBuilder}
+import flutterby.cats.config.ConfigBuilder
 
 trait ForAllTestContainer extends BeforeAfterAll {
 
@@ -60,12 +60,13 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
     s"jdbc:postgresql://${container.container.getContainerIpAddress}:${container.container.getMappedPort(dbPort)}/$dbName"
 
   import syntax.all._
-  lazy val dbConfig: Config[IO]         = ConfigBuilder
-    .impl[IO]
-    .dataSource(jdbcUrl, dbUserName, dbPassword)
-    .build
-  lazy val flutterby: IO[Flutterby[IO]] = FlutterbyCats.fromConfig[IO](dbConfig)
-  lazy val dbClean: IO[Unit]            = for {
+  lazy val flutterby: IO[Flutterby[IO]] =
+    ConfigBuilder
+      .impl[IO]
+      .dataSource(jdbcUrl, dbUserName, dbPassword)
+      .load
+
+  lazy val dbClean: IO[Unit] = for {
     fb <- flutterby
     _  <- fb.clean()
   } yield ()
