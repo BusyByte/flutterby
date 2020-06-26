@@ -32,16 +32,14 @@ Supports Scala 2.12.x and 2.13.x
 import cats.effect.IO
 import cats.implicits._
 import flutterby.core.Flutterby
-import flutterby.cats.FlutterbyCats
-import flutterby.cats.config.{Config, ConfigBuilder}
+import flutterby.cats.config.ConfigBuilder
 import flutterby.cats.syntax.all._
 
-val dbConfig: Config[IO]  = 
-  ConfigBuilder
-    .impl[IO]
-    .dataSource(jdbcUrl, dbUserName, dbPassword)
-    .build
-val flutterby: IO[Flutterby[IO]] = FlutterbyCats.fromConfig[IO](dbConfig)
+val flutterby: IO[Flutterby[IO]] =
+    ConfigBuilder
+      .impl[IO]
+      .dataSource(jdbcUrl, dbUserName, dbPassword)
+      .load
 
 for {
     fb                                <- flutterby
