@@ -24,11 +24,22 @@ import flutterby.cats.config.TestData.{
   StringVersion,
   TestDataSource,
   TestDataSourceImpl,
+  TestJavaMigrationClassProvider,
+  TestResourceProvider,
   Username
 }
 import flutterby.core.jdk.CollectionConversions
 import javax.sql.DataSource
-import org.flywaydb.core.api.{callback, executor, resolver, Location, MigrationType, MigrationVersion}
+import org.flywaydb.core.api.{
+  callback,
+  executor,
+  resolver,
+  ClassProvider,
+  Location,
+  MigrationType,
+  MigrationVersion,
+  ResourceProvider
+}
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.flywaydb.core.api.executor.MigrationExecutor
 import org.flywaydb.core.api.migration.{Context, JavaMigration}
@@ -38,6 +49,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 import org.flywaydb.core.api.callback.{Callback, Event}
+import org.flywaydb.core.internal.resource.LoadableResource
 
 import scala.util.{Failure, Success, Try}
 
@@ -101,6 +113,17 @@ object TestData {
     override def setLoginTimeout(seconds: Int): Unit                           = ()
     override def getLoginTimeout: Int                                          = 2
     override def getParentLogger: Logger                                       = Logger.getGlobal
+  }
+
+  final object TestResourceProvider extends ResourceProvider {
+    override def getResource(name: String): LoadableResource                                              = null
+    override def getResources(prefix: String, suffixes: Array[String]): util.Collection[LoadableResource] =
+      CollectionConversions.toJavaCollection(List.empty)
+  }
+
+  final object TestJavaMigrationClassProvider extends ClassProvider[JavaMigration] {
+    override def getClasses: (util.Collection[Class[_ <: JavaMigration]]) =
+      CollectionConversions.toJavaCollection(List.empty)
   }
 }
 
@@ -337,6 +360,7 @@ object Arbitraries {
         installedBy                  <- Gen.asciiPrintableStr
         group                        <- Arbitrary.arbitrary[Boolean]
         licenseKey                   <- Gen.asciiPrintableStr
+        createSchemas                <- Arbitrary.arbitrary[Boolean]
         f1                            = new FluentConfiguration(Thread.currentThread.getContextClassLoader)
                                           .defaultSchema(defaultSchema)
                                           .schemas(schemas: _*)
@@ -370,6 +394,9 @@ object Arbitraries {
                                           .installedBy(installedBy)
                                           .group(group)
                                           .licenseKey(licenseKey)
+                                          .createSchemas(createSchemas)
+                                          .resourceProvider(TestResourceProvider)
+                                          .javaMigrationClassProvider(TestJavaMigrationClassProvider)
         f2                            = locationsEndo(f1)
         f3                            = encodingEndo(f2)
         f4                            = targetEndo(f3)
@@ -432,6 +459,9 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
       .skipDefaultCallbacks(fluentConfig.isSkipDefaultCallbacks)
       .resolvers(fluentConfig.getResolvers.toList: _*)
       .skipDefaultResolvers(fluentConfig.isSkipDefaultResolvers)
+      .createSchemas(fluentConfig.getCreateSchemas)
+      .resourceProvider(fluentConfig.getResourceProvider)
+      .javaMigrationClassProvider(fluentConfig.getJavaMigrationClassProvider)
 
     val configBuilder = dsOp(cb)
 
@@ -480,6 +510,9 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
     resultingConfig.getResolvers must_== fluentConfig.getResolvers
     resultingConfig.isSkipDefaultResolvers must_== fluentConfig.isSkipDefaultResolvers
     resultingConfig.getTablespace must_== fluentConfig.getTablespace
+    resultingConfig.getCreateSchemas must_== fluentConfig.getCreateSchemas
+    resultingConfig.getResourceProvider must_== fluentConfig.getResourceProvider
+    resultingConfig.getJavaMigrationClassProvider must_== fluentConfig.getJavaMigrationClassProvider
   }
 
   def extractDataSourceData(ds: DataSource): Option[(String, String, String)] =

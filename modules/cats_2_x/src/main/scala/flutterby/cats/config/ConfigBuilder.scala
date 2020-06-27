@@ -18,7 +18,7 @@ package config {
   import javax.sql.DataSource
   import org.flywaydb.core.api.callback.Callback
   import org.flywaydb.core.api.resolver.MigrationResolver
-  import org.flywaydb.core.api.{Location, MigrationVersion}
+  import org.flywaydb.core.api.{ClassProvider, Location, MigrationVersion, ResourceProvider}
   import cats.syntax.all._
   import org.flywaydb.core.api.migration.JavaMigration
 
@@ -207,6 +207,15 @@ package config {
 
     def envVars[F[_]: Sync](): Endo[F] =
       _.updateConf(_.envVars())
+
+    def resourceProvider[F[_]: Sync](resourceProvider: ResourceProvider): Endo[F] =
+      _.updateConf(_.resourceProvider(resourceProvider))
+
+    def javaMigrationClassProvider[F[_]: Sync](javaMigrationClassProvider: ClassProvider[JavaMigration]): Endo[F] =
+      _.updateConf(_.javaMigrationClassProvider(javaMigrationClassProvider))
+
+    def createSchemas[F[_]: Sync](createSchemas: Boolean): Endo[F] =
+      _.updateConf(_.createSchemas(createSchemas))
 
     def build[F[_]: Sync](s: ConfigBuilder[F]): Config[F]                           =
       new Config[F](s.run(new FluentConfiguration()).widen[Configuration]) {}
@@ -518,6 +527,21 @@ package config {
           implicit F: Sync[F]
       ): ConfigBuilder[F] =
         ConfigBuilder.envVars().apply(s)
+
+      def resourceProvider(resourceProvider: ResourceProvider)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
+        ConfigBuilder.resourceProvider(resourceProvider).apply(s)
+
+      def javaMigrationClassProvider(javaMigrationClassProvider: ClassProvider[JavaMigration])(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
+        ConfigBuilder.javaMigrationClassProvider(javaMigrationClassProvider).apply(s)
+
+      def createSchemas(createSchemas: Boolean)(
+          implicit F: Sync[F]
+      ): ConfigBuilder[F] =
+        ConfigBuilder.createSchemas(createSchemas).apply(s)
 
       def updateConf(fn: FluentConfiguration => FluentConfiguration)(
           implicit F: Sync[F]
