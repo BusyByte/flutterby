@@ -3,8 +3,6 @@ import Dependencies.Libraries
 val scala2_12V = "2.12.11"
 val scala2_13V = "2.13.2"
 
-publishTo in ThisBuild := sonatypePublishToBundle.value
-
 lazy val `flutterby` =
   (project in file("."))
     .aggregate(`flutterby-core`, `flutterby-cats_1_x`, `flutterby-cats_2_x`)
@@ -51,8 +49,6 @@ lazy val commonSettings = Seq(
   )
 )
 
-import ReleaseTransformations._
-
 lazy val contributors = Seq(
   "BusyByte" -> "Shawn Garner"
 )
@@ -67,7 +63,6 @@ lazy val releaseSettings = Seq(
   ),
   homepage := Some(url("https://github.com/BusyByte/flutterby")),
   licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  publishMavenStyle := true,
   pomIncludeRepository := { _ =>
     false
   },
@@ -82,23 +77,7 @@ lazy val releaseSettings = Seq(
     </developer>
     }
     </developers>
-  },
-  releaseCrossBuild := true, // true if you cross-build the project for multiple Scala versions
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies, // : ReleaseStep
-    inquireVersions,           // : ReleaseStep
-    runClean,                  // : ReleaseStep
-    runTest,                   // : ReleaseStep
-    setReleaseVersion,         // : ReleaseStep
-    commitReleaseVersion,      // : ReleaseStep, performs the initial git checks
-    tagRelease,                // : ReleaseStep
-    // For non cross-build projects, use releaseStepCommand("publishSigned")
-    releaseStepCommandAndRemaining("+publishSigned"),
-    releaseStepCommand("sonatypeBundleRelease"),
-    setNextVersion,            // : ReleaseStep
-    commitNextVersion,         // : ReleaseStep
-    pushChanges                // : ReleaseStep, also checks that an upstream branch is properly configured
-  )
+  }
 )
 
 lazy val noPublishSettings =
