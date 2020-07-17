@@ -1,7 +1,7 @@
 import Dependencies.Libraries
 
-val scala2_12V = "2.12.11"
-val scala2_13V = "2.13.2"
+val scala2_12V = "2.12.12"
+val scala2_13V = "2.13.3"
 
 lazy val `flutterby` =
   (project in file("."))
