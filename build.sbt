@@ -5,7 +5,7 @@ val scala2_13V = "2.13.2"
 
 lazy val `flutterby` =
   (project in file("."))
-    .aggregate(`flutterby-core`, `flutterby-cats_1_x`, `flutterby-cats_2_x`)
+    .aggregate(`flutterby-core`, `flutterby-cats_2_x`, `flutterby-cats_1_x`)
     .settings(noPublishSettings)
     .settings(commonSettings, releaseSettings)
 
@@ -14,14 +14,6 @@ lazy val `flutterby-core` = project
   .settings(name := "flutterby-core")
   .settings(crossScalaVersions := Seq(scala2_12V, scala2_13V))
   .settings(commonSettings, releaseSettings)
-
-lazy val `flutterby-cats_1_x` = project
-  .in(file("modules/cats_1_x"))
-  .dependsOn(`flutterby-core`)
-  .settings(name := "flutterby-cats_1_x")
-  .settings(crossScalaVersions := Seq(scala2_12V))
-  .settings(commonSettings, releaseSettings)
-  .settings(libraryDependencies += Libraries.catsEffect_1_x)
 
 lazy val `flutterby-cats_2_x` = project
   .in(file("modules/cats_2_x"))
@@ -37,6 +29,14 @@ lazy val `flutterby-cats_2_x` = project
       Libraries.postgres               % Test
     )
   )
+
+lazy val `flutterby-cats_1_x` = project
+  .in(file("modules/cats_1_x"))
+  .dependsOn(`flutterby-core`)
+  .settings(name := "flutterby-cats_1_x")
+  .settings(crossScalaVersions := Seq(scala2_12V))
+  .settings(commonSettings, releaseSettings)
+  .settings(libraryDependencies += Libraries.catsEffect_1_x)
 
 lazy val commonSettings = Seq(
   organization := "dev.shawngarner",

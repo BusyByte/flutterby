@@ -3,8 +3,8 @@ import sbt._
 object Dependencies {
 
   object Versions {
+    val catsEffect_2_x = "2.1.4"
     val catsEffect_1_x = "1.4.0"
-    val catsEffect_2_x = "2.1.3"
 
     // Test
     val specs2                        = "4.10.0"
