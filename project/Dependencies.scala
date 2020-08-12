@@ -15,7 +15,7 @@ object Dependencies {
     // Compiler
     val kindProjector    = "0.10.3"
     val betterMonadicFor = "0.3.1"
-    val flyway           = "6.5.3"
+    val flyway           = "6.5.4"
   }
 
   object Libraries {
