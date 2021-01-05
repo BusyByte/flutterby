@@ -3,12 +3,12 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val catsEffect_2_x = "2.2.0"
-    val catsEffect_1_x = "2.3.0"
+    val catsEffect_2_x = "2.3.1"
+    val catsEffect_1_x = "1.4.0"
 
     // Test
     val specs2                        = "4.10.5"
-    val testContainersScalaVersion    = "0.38.6" // https://github.com/testcontainers/testcontainers-scala/releases
+    val testContainersScalaVersion    = "0.38.8" // https://github.com/testcontainers/testcontainers-scala/releases
     val testContainersPostgresVersion = "1.15.0" // https://github.com/testcontainers/testcontainers-java/releases
     val postgresVersion               = "42.2.18"
 
