@@ -1,5 +1,5 @@
-addSbtPlugin("com.geirsson"              % "sbt-ci-release"            % "1.5.4")
+addSbtPlugin("com.geirsson"              % "sbt-ci-release"            % "1.5.5")
 addSbtPlugin("org.scalameta"             % "sbt-scalafmt"              % "2.4.2")
 addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat"              % "0.1.16")
-addSbtPlugin("com.github.cb372"          % "sbt-explicit-dependencies" % "0.2.15")
+addSbtPlugin("com.github.cb372"          % "sbt-explicit-dependencies" % "0.2.16")
 addSbtPlugin("com.timushev.sbt"          % "sbt-updates"               % "0.5.1")
