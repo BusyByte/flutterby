@@ -7,7 +7,7 @@ object Dependencies {
     val catsEffect_1_x = "1.4.0"
 
     // Test
-    val specs2                        = "4.10.5"
+    val specs2                        = "4.10.6"
     val testContainersScalaVersion    = "0.38.8" // https://github.com/testcontainers/testcontainers-scala/releases
     val testContainersPostgresVersion = "1.15.1" // https://github.com/testcontainers/testcontainers-java/releases
     val postgresVersion               = "42.2.18"
