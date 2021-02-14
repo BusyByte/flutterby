@@ -8,8 +8,8 @@ val testContainersPostgresV = "1.15.2" // https://github.com/testcontainers/test
 val postgresV               = "42.2.18"
 
 // Compiler
-val kindProjectorV    = "0.10.3"
-val betterMonadicForV = "0.3.1"
+//val kindProjectorV    = "0.10.3"
+//val betterMonadicForV = "0.3.1"
 
 lazy val `flutterby` =
   (project in file("."))
@@ -38,13 +38,13 @@ lazy val `flutterby-cats` = project
 
 lazy val commonSettings = Seq(
   organization := "dev.shawngarner",
-  scalaVersion := "2.13.4",
+  scalaVersion := "3.0.0-M3",
   libraryDependencies ++= Seq(
     "org.flywaydb" % "flyway-core"       % flywayV,
-    "org.specs2"  %% "specs2-core"       % specs2V % Test,
-    "org.specs2"  %% "specs2-scalacheck" % specs2V % Test,
-    compilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV),
-    compilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV)
+    ("org.specs2"  %% "specs2-core"       % specs2V % Test).withDottyCompat(scalaVersion.value),
+    ("org.specs2"  %% "specs2-scalacheck" % specs2V % Test).withDottyCompat(scalaVersion.value)
+    //compilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV),
+    //compilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV)
   )
 )
 
