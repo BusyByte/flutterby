@@ -16,7 +16,7 @@ import cats.effect.unsafe.implicits.global
 
 trait ForAllTestContainer extends BeforeAfterAll {
 
-  def container: Container
+  def container: GenericContainer
 
   override def beforeAll(): Unit = {
     container.start()
@@ -42,7 +42,7 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   lazy val dbName     = "test_db"
   lazy val dbPort     = 5432
 
-  override lazy val container = GenericContainer(
+  override lazy val container: GenericContainer = GenericContainer(
     "christopherdavenport/postgres-multi-db:10.3",
     exposedPorts = Seq(dbPort),
     env = Map(
@@ -58,7 +58,7 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   )
   lazy val driverName         = "org.postgresql.Driver"
   lazy val jdbcUrl            =
-    s"jdbc:postgresql://${container.container.getContainerIpAddress}:${container.container.getMappedPort(dbPort)}/$dbName"
+    s"jdbc:postgresql://${container.containerIpAddress}:${container.mappedPort(dbPort)}/$dbName"
 
   import syntax.all._
   lazy val flutterby: IO[Flutterby[IO]] =

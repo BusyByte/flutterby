@@ -104,7 +104,7 @@ object TestData {
   sealed trait TestDataSource
   final case class JdbcUrlDatasource(url: JdbcUrl, username: Username, password: Password) extends TestDataSource
 
-  final object TestDataSourceImpl extends DataSource with TestDataSource {
+  object TestDataSourceImpl extends DataSource with TestDataSource {
     val jdcbUrl                                                                = "TestDataSourceImplUrl"
     val username                                                               = "TestUsername"
     val password                                                               = "TestPassword"
@@ -119,13 +119,13 @@ object TestData {
     override def getParentLogger: Logger                                       = Logger.getGlobal
   }
 
-  final object TestResourceProvider extends ResourceProvider {
+  object TestResourceProvider extends ResourceProvider {
     override def getResource(name: String): LoadableResource                                              = null
     override def getResources(prefix: String, suffixes: Array[String]): util.Collection[LoadableResource] =
       CollectionConversions.toJavaCollection(List.empty)
   }
 
-  final object TestJavaMigrationClassProvider extends ClassProvider[JavaMigration] {
+  object TestJavaMigrationClassProvider extends ClassProvider[JavaMigration] {
     override def getClasses: (util.Collection[Class[_ <: JavaMigration]]) =
       CollectionConversions.toJavaCollection(List.empty)
   }
