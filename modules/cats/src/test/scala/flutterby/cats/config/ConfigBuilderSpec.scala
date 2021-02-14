@@ -5,7 +5,6 @@ import java.nio.charset.{Charset, StandardCharsets}
 import java.sql.Connection
 import java.util
 import java.util.logging.Logger
-
 import cats.effect.IO
 import flutterby.cats.config.TestData.{
   Callback1,
@@ -29,6 +28,7 @@ import flutterby.cats.config.TestData.{
   Username
 }
 import flutterby.core.jdk.CollectionConversions
+
 import javax.sql.DataSource
 import org.flywaydb.core.api.{
   callback,
@@ -49,7 +49,8 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 import org.flywaydb.core.api.callback.{Callback, Event}
-import org.flywaydb.core.internal.resource.LoadableResource
+import org.flywaydb.core.api.resource.LoadableResource
+import cats.effect.unsafe.implicits.global
 
 import scala.util.{Failure, Success, Try}
 
@@ -66,16 +67,19 @@ object TestData {
     override def supports(event: Event, context: callback.Context): Boolean               = false
     override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
     override def handle(event: Event, context: callback.Context): Unit                    = ()
+    override def getCallbackName: String                                                  = "Callback1"
   }
   final class Callback2 extends Callback {
     override def supports(event: Event, context: callback.Context): Boolean               = false
     override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
     override def handle(event: Event, context: callback.Context): Unit                    = ()
+    override def getCallbackName: String                                                  = "Callback2"
   }
   final class Callback3 extends Callback {
     override def supports(event: Event, context: callback.Context): Boolean               = false
     override def canHandleInTransaction(event: Event, context: callback.Context): Boolean = false
     override def handle(event: Event, context: callback.Context): Unit                    = ()
+    override def getCallbackName: String                                                  = "Callback3"
   }
 
   final case class StringMigrationResolver(value: String) extends AnyVal
@@ -171,6 +175,8 @@ object Arbitraries {
       override def canHandleInTransaction(event: Event, context: callback.Context): Boolean =
         canHandleInTransactionResult
       override def handle(event: Event, context: callback.Context): Unit                    = ()
+
+      override def getCallbackName: String = "Arbitrary[Callback]"
     }
   }
 
@@ -194,10 +200,12 @@ object Arbitraries {
       executeResult        <- Gen
                                 .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
       executeInTransaction <- Arbitrary.arbitrary[Boolean]
+      canExecute           <- Arbitrary.arbitrary[Boolean]
     } yield new MigrationExecutor {
       override def execute(context: executor.Context): Unit =
         executeResult.get
       override def canExecuteInTransaction: Boolean         = executeInTransaction
+      override def shouldExecute(): Boolean                 = canExecute
     }
   }
 

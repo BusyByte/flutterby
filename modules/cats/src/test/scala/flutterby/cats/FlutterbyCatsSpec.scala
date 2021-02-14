@@ -12,6 +12,7 @@ import org.specs2.specification.{BeforeAfterAll, BeforeAfterEach}
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
 import cats.implicits._
 import flutterby.cats.config.ConfigBuilder
+import cats.effect.unsafe.implicits.global
 
 trait ForAllTestContainer extends BeforeAfterAll {
 
