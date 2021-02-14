@@ -1,9 +1,9 @@
-val catsEffectV = "2.3.1"
-val flywayV     = "6.5.7"
+val catsEffectV = "3.0.0-RC1"
+val flywayV     = "7.5.3"
 
 // Test
 val specs2V                 = "4.10.6"
-val testContainersScalaV    = "0.39.0" // https://github.com/testcontainers/testcontainers-scala/releases
+val testContainersScalaV    = "0.39.1" // https://github.com/testcontainers/testcontainers-scala/releases
 val testContainersPostgresV = "1.15.2" // https://github.com/testcontainers/testcontainers-java/releases
 val postgresV               = "42.2.18"
 

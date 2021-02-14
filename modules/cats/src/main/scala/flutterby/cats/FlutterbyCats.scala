@@ -13,16 +13,16 @@ object FlutterbyCats {
   ): F[Flutterby[F]] =
     for {
       c      <- config.config
-      flyway <- F.delay(Flyway.configure(c.getClassLoader).configuration(c).load())
+      flyway <- F.blocking(Flyway.configure(c.getClassLoader).configuration(c).load())
     } yield new Flutterby[F] {
-      override def baseline(): F[Unit]         = F.delay(flyway.baseline())
-      override def migrate(): F[Int]           = F.delay(flyway.migrate())
+      override def baseline(): F[Unit]         = F.blocking(flyway.baseline()).void              // TODO: support new model instead of void
+      override def migrate(): F[Int]           = F.blocking(flyway.migrate().migrationsExecuted) // TODO: support new model
       override def info(): F[AllMigrationInfo] =
-        F.delay(flyway.info()) >>= ((i: FlywayMigrationInfoService) => AllMigrationInfoCats.fromFlyway[F](i))
-      override def validate(): F[Unit]         = F.delay(flyway.validate())
-      override def undo(): F[Int]              = F.delay(flyway.undo())
-      override def repair(): F[Unit]           = F.delay(flyway.repair())
-      override def clean(): F[Unit]            = F.delay(flyway.clean())
+        F.blocking(flyway.info()) >>= ((i: FlywayMigrationInfoService) => AllMigrationInfoCats.fromFlyway[F](i))
+      override def validate(): F[Unit]         = F.blocking(flyway.validate())
+      override def undo(): F[Int]              = F.blocking(flyway.undo().migrationsUndone)      // TODO: support new model
+      override def repair(): F[Unit]           = F.blocking(flyway.repair()).void                // TODO: support new model instead of void
+      override def clean(): F[Unit]            = F.blocking(flyway.clean()).void                 // TODO: support new model instead of void
     }
 }
 
@@ -30,7 +30,7 @@ object AllMigrationInfoCats {
   def fromFlyway[F[_]](f: FlywayMigrationInfoService)(
       implicit F: Sync[F]
   ): F[AllMigrationInfo] =
-    F.delay(
+    F.blocking(
       AllMigrationInfo(
         all = f.all().toVector.map(MigrationInfo.fromFlyway),
         current = Option(f.current()).map(MigrationInfo.fromFlyway),
