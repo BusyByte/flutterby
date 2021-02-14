@@ -4,14 +4,14 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit.SECONDS
 
 import cats.effect.IO
-import com.dimafeng.testcontainers.{Container, GenericContainer}
+import com.dimafeng.testcontainers.GenericContainer
 import flutterby.core.Flutterby
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
 import org.specs2.specification.{BeforeAfterAll, BeforeAfterEach}
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
 import cats.implicits._
-import flutterby.cats.config.ConfigBuilder
+import flutterby.cats.config._
 import cats.effect.unsafe.implicits.global
 
 trait ForAllTestContainer extends BeforeAfterAll {
@@ -60,17 +60,16 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   lazy val jdbcUrl            =
     s"jdbc:postgresql://${container.containerIpAddress}:${container.mappedPort(dbPort)}/$dbName"
 
-  import syntax.all._
   lazy val flutterby: IO[Flutterby[IO]] =
     ConfigBuilder
       .impl[IO]
       .dataSource(jdbcUrl, dbUserName, dbPassword)
       .load
 
-  lazy val dbClean: IO[Unit] = for {
+  lazy val dbClean: IO[Unit] = for
     fb <- flutterby
     _  <- fb.clean()
-  } yield ()
+  yield ()
 
   override protected def before: Any =
     dbClean.unsafeRunSync()
@@ -78,7 +77,7 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   override protected def after: Any = {}
 
   "happy path" in {
-    val result: IO[MatchResult[Any]] = for {
+    val result: IO[MatchResult[Any]] = for
       fb                                <- flutterby
       validateResultBeforeMigrate       <- fb.validate().attempt
       infoBeforeMigrate                 <- fb.info()
@@ -87,7 +86,7 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
       _                                 <- fb.baseline()
       _                                 <- fb.validate()
       infoAfterMigrate                  <- fb.info()
-    } yield {
+    yield {
       validateResultBeforeMigrate.leftMap(_.getMessage) aka "validateResultBeforeMigrate" must beLeft.which {
         case msg: String =>
           msg must contain("Validate failed:")

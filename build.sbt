@@ -39,6 +39,11 @@ lazy val `flutterby-cats` = project
 lazy val commonSettings = Seq(
   organization := "dev.shawngarner",
   scalaVersion := "3.0.0-M3",
+//  scalacOptions ++= Seq(
+//    "-rewrite",
+//    "-new-syntax",
+//    "-source:3.0-migration"
+//  ),
   libraryDependencies ++= Seq(
     "org.flywaydb" % "flyway-core"       % flywayV,
     ("org.specs2"  %% "specs2-core"       % specs2V % Test).withDottyCompat(scalaVersion.value),
