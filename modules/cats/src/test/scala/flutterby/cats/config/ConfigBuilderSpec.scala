@@ -134,9 +134,9 @@ object TestData {
 object Arbitraries {
 
   implicit val arbJdbcUrl: Arbitrary[JdbcUrl] = Arbitrary {
-    for {
+    for
       dbName <- Gen.alphaNumStr.suchThat(v => Option(v).exists(_.trim.length > 0))
-    } yield JdbcUrl(s"jdbc:postgresql://127.0.0.1:5432/$dbName")
+    yield JdbcUrl(s"jdbc:postgresql://127.0.0.1:5432/$dbName")
   }
 
   implicit val arbUsername: Arbitrary[Username] =
@@ -146,31 +146,31 @@ object Arbitraries {
     Arbitrary(Gen.asciiPrintableStr.map(Password.apply))
 
   implicit val arbJdbcUrlDatasource: Arbitrary[JdbcUrlDatasource] = Arbitrary {
-    for {
+    for
       jdbcUrl  <- Arbitrary.arbitrary[JdbcUrl]
       username <- Arbitrary.arbitrary[Username]
       password <- Arbitrary.arbitrary[Password]
-    } yield JdbcUrlDatasource(jdbcUrl, username, password)
+    yield JdbcUrlDatasource(jdbcUrl, username, password)
   }
 
   implicit val arbStringMigrationResolver: Arbitrary[StringMigrationResolver] = Arbitrary {
-    for {
+    for
       migrator <-
         Gen.oneOf(classOf[MigrationResolver1], classOf[MigrationResolver2], classOf[MigrationResolver3]).map(_.getName)
-    } yield StringMigrationResolver(migrator)
+    yield StringMigrationResolver(migrator)
   }
 
   implicit val arbStringCallback: Arbitrary[StringCallback] = Arbitrary {
-    for {
+    for
       callback <- Gen.oneOf(classOf[Callback1], classOf[Callback2], classOf[Callback3]).map(_.getName)
-    } yield StringCallback(callback)
+    yield StringCallback(callback)
   }
 
   implicit val arbCallback: Arbitrary[Callback] = Arbitrary {
-    for {
+    for
       supportsResult               <- Arbitrary.arbitrary[Boolean]
       canHandleInTransactionResult <- Arbitrary.arbitrary[Boolean]
-    } yield new Callback {
+    yield new Callback {
       override def supports(event: Event, context: callback.Context): Boolean               = supportsResult
       override def canHandleInTransaction(event: Event, context: callback.Context): Boolean =
         canHandleInTransactionResult
@@ -181,27 +181,27 @@ object Arbitraries {
   }
 
   implicit val arbStringVersion: Arbitrary[StringVersion] = Arbitrary {
-    for {
+    for
       target <-
         Gen.oneOf[String](Gen.const(null), Gen.const("current"), Gen.const("latest"), Gen.posNum[Int].map(_.toString))
-    } yield StringVersion(target)
+    yield StringVersion(target)
   }
 
   implicit val arbMigrationVersion: Arbitrary[MigrationVersion] = Arbitrary {
-    for {
+    for
       version <- Arbitrary.arbitrary[StringVersion]
-    } yield MigrationVersion.fromVersion(version.value)
+    yield MigrationVersion.fromVersion(version.value)
   }
 
   implicit val arbMigrationType: Arbitrary[MigrationType] = Arbitrary(Gen.oneOf(MigrationType.values().toList))
 
   implicit val arbMigrationExecutor: Arbitrary[MigrationExecutor] = Arbitrary {
-    for {
+    for
       executeResult        <- Gen
                                 .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
       executeInTransaction <- Arbitrary.arbitrary[Boolean]
       canExecute           <- Arbitrary.arbitrary[Boolean]
-    } yield new MigrationExecutor {
+    yield new MigrationExecutor {
       override def execute(context: executor.Context): Unit =
         executeResult.get
       override def canExecuteInTransaction: Boolean         = executeInTransaction
@@ -210,7 +210,7 @@ object Arbitraries {
   }
 
   implicit val arbResolvedMigration: Arbitrary[ResolvedMigration] = Arbitrary {
-    for {
+    for
       version                                    <- Arbitrary.arbitrary[MigrationVersion]
       description                                <- Gen.asciiPrintableStr
       script                                     <- Gen.alphaNumStr
@@ -220,7 +220,7 @@ object Arbitraries {
       executor                                   <- Arbitrary.arbitrary[MigrationExecutor]
       checksumMatchesResult                      <- Arbitrary.arbitrary[Boolean]
       checksumMatchesWithoutBeingIdenticalResult <- Arbitrary.arbitrary[Boolean]
-    } yield new ResolvedMigration {
+    yield new ResolvedMigration {
       override def getVersion: MigrationVersion                                     = version
       override def getDescription: String                                           = description
       override def getScript: String                                                = script
@@ -236,41 +236,41 @@ object Arbitraries {
   }
 
   implicit val arbMigrationResolver: Arbitrary[MigrationResolver] = Arbitrary {
-    for {
+    for
       resolvedMigrations <- Gen.listOf(Arbitrary.arbitrary[ResolvedMigration])
-    } yield new MigrationResolver {
+    yield new MigrationResolver {
       override def resolveMigrations(context: resolver.Context): util.Collection[ResolvedMigration] =
         CollectionConversions.toJavaCollection(resolvedMigrations)
     }
   }
 
   implicit val arbStringLocation: Arbitrary[StringLocation] = Arbitrary {
-    for {
+    for
       locationPrefix <- Gen.oneOf("filesystem:", "classpath:")
       location       <- Gen.alphaNumStr
-    } yield StringLocation(locationPrefix + location)
+    yield StringLocation(locationPrefix + location)
   }
 
   implicit val arbLocation: Arbitrary[Location] = Arbitrary {
-    for {
+    for
       loc <- Arbitrary.arbitrary[StringLocation]
-    } yield new Location(loc.value)
+    yield new Location(loc.value)
   }
 
   implicit val arbCharsetEncoding: Arbitrary[Charset] = Arbitrary {
-    for {
+    for
       encoding <- Gen.oneOf(StandardCharsets.UTF_8, StandardCharsets.US_ASCII, StandardCharsets.ISO_8859_1)
-    } yield encoding
+    yield encoding
   }
 
   implicit val arbStringEncoding: Arbitrary[StringEncoding] = Arbitrary {
-    for {
+    for
       encoding <- Arbitrary.arbitrary[Charset].map(_.name())
-    } yield StringEncoding(encoding)
+    yield StringEncoding(encoding)
   }
 
   implicit val arbJavaMigration: Arbitrary[JavaMigration] = Arbitrary {
-    for {
+    for
       version              <- Arbitrary.arbitrary[MigrationVersion]
       description          <- Gen.asciiPrintableStr
       checksum             <- Gen.posNum[Int]
@@ -278,7 +278,7 @@ object Arbitraries {
       executeInTransaction <- Arbitrary.arbitrary[Boolean]
       migrateResult        <- Gen
                                 .oneOf[Try[Unit]](Failure(new RuntimeException("Boom!")), Success(()))
-    } yield new JavaMigration {
+    yield new JavaMigration {
       override def getVersion: MigrationVersion     = version
       override def getDescription: String           = description
       override def getChecksum: Integer             = checksum
@@ -294,7 +294,7 @@ object Arbitraries {
 
   implicit val arbFluentConfiguration: Arbitrary[FluentConfigurationWithDatasource] =
     Arbitrary {
-      for {
+      for
         locationsEndo                <- Gen.oneOf(
                                           Gen
                                             .listOf(Arbitrary.arbitrary[StringLocation])
@@ -412,7 +412,7 @@ object Arbitraries {
         f6                            = callbacksEndo(f5)
         f7                            = resolversEndo(f6)
         f8                            = dataSourceEndo(f7)
-      } yield FluentConfigurationWithDatasource(f8, dataSource)
+      yield FluentConfigurationWithDatasource(f8, dataSource)
     }
 }
 
@@ -420,7 +420,6 @@ class ConfigBuilderSpec extends Specification with ScalaCheck {
   import Arbitraries._
   "must have be the same" in prop { (f: FluentConfigurationWithDatasource) =>
     val fluentConfig = f.fluentConfiguration
-    import _root_.flutterby.cats.syntax.all._
 
     val dsOp: ConfigBuilder[IO] => ConfigBuilder[IO] = f.ds match {
       case JdbcUrlDatasource(url, username, password) =>
