@@ -2,6 +2,8 @@ package flutterby.core.jdk
 
 import java.util
 
+/** @author Shawn Garner
+  */
 object CollectionConversions {
 
   import scala.jdk.CollectionConverters._

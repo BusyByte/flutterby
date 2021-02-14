@@ -1,51 +1,50 @@
-import Dependencies.Libraries
+val catsEffectV = "2.3.1"
+val flywayV     = "6.5.7"
 
-val scala2_12V = "2.12.12"
-val scala2_13V = "2.13.4"
+// Test
+val specs2V                 = "4.10.6"
+val testContainersScalaV    = "0.39.0" // https://github.com/testcontainers/testcontainers-scala/releases
+val testContainersPostgresV = "1.15.2" // https://github.com/testcontainers/testcontainers-java/releases
+val postgresV               = "42.2.18"
+
+// Compiler
+val kindProjectorV    = "0.10.3"
+val betterMonadicForV = "0.3.1"
 
 lazy val `flutterby` =
   (project in file("."))
-    .aggregate(`flutterby-core`, `flutterby-cats_2_x`, `flutterby-cats_1_x`)
+    .aggregate(`flutterby-core`, `flutterby-cats`)
     .settings(noPublishSettings)
     .settings(commonSettings, releaseSettings)
 
 lazy val `flutterby-core` = project
   .in(file("modules/core"))
   .settings(name := "flutterby-core")
-  .settings(crossScalaVersions := Seq(scala2_12V, scala2_13V))
   .settings(commonSettings, releaseSettings)
 
-lazy val `flutterby-cats_2_x` = project
-  .in(file("modules/cats_2_x"))
+lazy val `flutterby-cats` = project
+  .in(file("modules/cats"))
   .dependsOn(`flutterby-core`)
-  .settings(name := "flutterby-cats_2_x")
-  .settings(crossScalaVersions := Seq(scala2_12V, scala2_13V))
+  .settings(name := "flutterby-cats")
   .settings(commonSettings, releaseSettings)
   .settings(
     libraryDependencies ++= Seq(
-      Libraries.catsEffect_2_x,
-      Libraries.testContainersScala    % Test,
-      Libraries.testContainersPostgres % Test,
-      Libraries.postgres               % Test
+      "org.typelevel"     %% "cats-effect"          % catsEffectV,
+      "com.dimafeng"      %% "testcontainers-scala" % testContainersScalaV    % Test,
+      "org.testcontainers" % "postgresql"           % testContainersPostgresV % Test,
+      "org.postgresql"     % "postgresql"           % postgresV               % Test
     )
   )
 
-lazy val `flutterby-cats_1_x` = project
-  .in(file("modules/cats_1_x"))
-  .dependsOn(`flutterby-core`)
-  .settings(name := "flutterby-cats_1_x")
-  .settings(crossScalaVersions := Seq(scala2_12V))
-  .settings(commonSettings, releaseSettings)
-  .settings(libraryDependencies += Libraries.catsEffect_1_x)
-
 lazy val commonSettings = Seq(
   organization := "dev.shawngarner",
+  scalaVersion := "2.13.4",
   libraryDependencies ++= Seq(
-    Libraries.flyway,
-    Libraries.specs2           % Test,
-    Libraries.specs2ScalaCheck % Test,
-    compilerPlugin(Libraries.kindProjector),
-    compilerPlugin(Libraries.betterMonadicFor)
+    "org.flywaydb" % "flyway-core"       % flywayV,
+    "org.specs2"  %% "specs2-core"       % specs2V % Test,
+    "org.specs2"  %% "specs2-scalacheck" % specs2V % Test,
+    compilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV),
+    compilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV)
   )
 )
 
