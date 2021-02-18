@@ -5,7 +5,7 @@ val flywayV     = "7.5.3"
 val specs2V                 = "4.10.6"
 val testContainersScalaV    = "0.39.1" // https://github.com/testcontainers/testcontainers-scala/releases
 val testContainersPostgresV = "1.15.2" // https://github.com/testcontainers/testcontainers-java/releases
-val postgresV               = "42.2.18"
+val postgresV               = "42.2.19"
 
 // Compiler
 //val kindProjectorV    = "0.10.3"
