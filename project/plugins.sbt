@@ -6,4 +6,4 @@ addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.16")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.5.1")
 
-addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.2")
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.3")
