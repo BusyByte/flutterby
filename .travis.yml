@@ -15,7 +15,7 @@ jobs:
   include:
     # stage="test" if no stage is specified
     - name: test jdk11 3.0
-      scala: 3.0.0-M3
+      scala: 3.0.0-RC1
       jdk: openjdk11
       script: sbt ++$TRAVIS_SCALA_VERSION test
     - name: test jdk8 3.0
