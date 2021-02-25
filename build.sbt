@@ -1,9 +1,9 @@
-val catsEffectV = "3.0.0-RC1"
+val catsEffectV = "3.0.0-RC2"
 val flywayV     = "7.5.4"
 
 // Test
 val specs2V                 = "4.10.6"
-val testContainersScalaV    = "0.39.1" // https://github.com/testcontainers/testcontainers-scala/releases
+val testContainersScalaV    = "0.39.2" // https://github.com/testcontainers/testcontainers-scala/releases
 val testContainersPostgresV = "1.15.2" // https://github.com/testcontainers/testcontainers-java/releases
 val postgresV               = "42.2.19"
 
@@ -38,7 +38,7 @@ lazy val `flutterby-cats` = project
 
 lazy val commonSettings = Seq(
   organization := "dev.shawngarner",
-  scalaVersion := "3.0.0-M3",
+  scalaVersion := "3.0.0-RC1",
 //  scalacOptions ++= Seq(
 //    "-rewrite",
 //    "-new-syntax",
