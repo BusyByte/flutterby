@@ -1,5 +1,5 @@
 val catsEffectV = "3.0.0-RC2"
-val flywayV     = "7.5.4"
+val flywayV     = "7.6.0"
 
 // Test
 val specs2V                 = "4.10.6"
