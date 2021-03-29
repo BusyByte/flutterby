@@ -1,4 +1,4 @@
-val catsEffectV = "3.0.0-RC3"
+val catsEffectV = "3.0.0"
 val flywayV     = "7.7.1"
 
 // Test
