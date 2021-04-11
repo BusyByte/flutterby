@@ -1,5 +1,4 @@
 
-
 val catsEffectV = "3.0.2"
 val flywayV     = "7.7.3"
 
