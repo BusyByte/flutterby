@@ -1,16 +1,18 @@
+val scalaV = "3.0.0-RC1"
 
 val catsEffectV = "3.0.2"
+
 val flywayV     = "7.8.1"
 
 // Test
 val specs2V                 = "4.10.6"
+
 val testContainersScalaV    = "0.39.3" // https://github.com/testcontainers/testcontainers-scala/releases
+
 val testContainersPostgresV = "1.15.3" // https://github.com/testcontainers/testcontainers-java/releases
+
 val postgresV               = "42.2.19"
 
-// Compiler
-//val kindProjectorV    = "0.10.3"
-//val betterMonadicForV = "0.3.1"
 
 lazy val `flutterby` =
   (project in file("."))
@@ -39,7 +41,7 @@ lazy val `flutterby-cats` = project
 
 lazy val commonSettings = Seq(
   organization := "dev.shawngarner",
-  scalaVersion := "3.0.0-RC1",
+  scalaVersion := scalaV ,
 //  scalacOptions ++= Seq(
 //    "-rewrite",
 //    "-new-syntax",
@@ -47,10 +49,8 @@ lazy val commonSettings = Seq(
 //  ),
   libraryDependencies ++= Seq(
     "org.flywaydb" % "flyway-core"       % flywayV,
-    ("org.specs2"  %% "specs2-core"       % specs2V % Test).withDottyCompat(scalaVersion.value),
-    ("org.specs2"  %% "specs2-scalacheck" % specs2V % Test).withDottyCompat(scalaVersion.value)
-    //compilerPlugin("org.typelevel" %% "kind-projector"     % kindProjectorV),
-    //compilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV)
+    ("org.specs2"  %% "specs2-core"       % specs2V % Test).cross(CrossVersion.for3Use2_13),
+    ("org.specs2"  %% "specs2-scalacheck" % specs2V % Test).cross(CrossVersion.for3Use2_13)
   )
 )
 
@@ -59,7 +59,7 @@ lazy val contributors = Seq(
 )
 
 lazy val releaseSettings = Seq(
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   scmInfo := Some(
     ScmInfo(
       url("https://github.com/BusyByte/flutterby"),
