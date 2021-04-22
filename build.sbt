@@ -11,7 +11,7 @@ val testContainersScalaV    = "0.39.3" // https://github.com/testcontainers/test
 
 val testContainersPostgresV = "1.15.3" // https://github.com/testcontainers/testcontainers-java/releases
 
-val postgresV               = "42.2.19"
+val postgresV               = "42.2.20"
 
 
 lazy val `flutterby` =
