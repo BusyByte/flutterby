@@ -2,7 +2,7 @@ val scalaV = "3.0.0-RC1"
 
 val catsEffectV = "3.0.2"
 
-val flywayV     = "7.8.2"
+val flywayV     = "7.11.3"
 
 // Test
 val specs2V                 = "4.12.0"
