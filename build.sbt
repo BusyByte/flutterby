@@ -9,7 +9,7 @@ val specs2V                 = "4.12.0"
 
 val testContainersScalaV    = "0.39.4" // https://github.com/testcontainers/testcontainers-scala/releases
 
-val testContainersPostgresV = "1.15.3" // https://github.com/testcontainers/testcontainers-java/releases
+val testContainersPostgresV = "1.16.0" // https://github.com/testcontainers/testcontainers-java/releases
 
 val postgresV               = "42.2.20"
 
