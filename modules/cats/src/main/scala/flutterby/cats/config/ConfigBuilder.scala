@@ -23,324 +23,324 @@ package object config {
   import flutterby.core.Flutterby
   import org.flywaydb.core.api.migration.JavaMigration
 
-  extension [F[_]](s: ConfigBuilder[F]) {
+  extension[F[_]](s: ConfigBuilder[F]) {
     def dataSource(url: String, user: String, password: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.dataSource[F](url, user, password).apply(s)
 
     def dataSource(dataSource: DataSource)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.dataSource(dataSource).apply(s)
 
     def dryRunOutput(dryRunOutput: OutputStream)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.dryRunOutput(dryRunOutput).apply(s)
 
     def dryRunOutput(dryRunOutput: File)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.dryRunOutput(dryRunOutput).apply(s)
 
     def dryRunOutput(dryRunOutputFileName: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.dryRunOutput(dryRunOutputFileName).apply(s)
 
     def errorOverrides(errorOverrides: String*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.errorOverrides(errorOverrides: _*).apply(s)
 
     def group(group: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.group(group).apply(s)
 
     def installedBy(installedBy: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.installedBy(installedBy).apply(s)
 
     def mixed(mixed: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.mixed(mixed).apply(s)
 
     def ignoreMissingMigrations(ignoreMissingMigrations: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.ignoreMissingMigrations(ignoreMissingMigrations).apply(s)
 
     def ignoreIgnoredMigrations(ignoreIgnoredMigrations: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.ignoreIgnoredMigrations(ignoreIgnoredMigrations).apply(s)
 
     def ignorePendingMigrations(ignorePendingMigrations: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.ignorePendingMigrations(ignorePendingMigrations).apply(s)
 
     def ignoreFutureMigrations(ignoreFutureMigrations: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.ignoreFutureMigrations(ignoreFutureMigrations).apply(s)
 
     def validateMigrationNaming(validateMigrationNaming: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.validateMigrationNaming(validateMigrationNaming).apply(s)
 
     def validateOnMigrate(validateOnMigrate: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.validateOnMigrate(validateOnMigrate).apply(s)
 
     def cleanOnValidationError(cleanOnValidationError: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.cleanOnValidationError(cleanOnValidationError).apply(s)
 
     def cleanDisabled(cleanDisabled: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.cleanDisabled(cleanDisabled).apply(s)
 
     def locations(locations: String*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.locations(locations: _*).apply(s)
 
     def locations(locations: List[Location])(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.locations(locations).apply(s)
 
     def encoding(encoding: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.encoding(encoding).apply(s)
 
     def encoding(encoding: Charset)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.encoding(encoding).apply(s)
 
     def defaultSchema(schema: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.defaultSchema(schema).apply(s)
 
     def schemas(schemas: String*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.schemas(schemas: _*).apply(s)
 
     def table(table: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.table(table).apply(s)
 
     def tablespace(tablespace: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.tablespace(tablespace).apply(s)
 
     def target(target: MigrationVersion)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.target(target).apply(s)
 
     def target(target: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.target(target).apply(s)
 
     def placeholderReplacement(placeholderReplacement: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.placeholderReplacement(placeholderReplacement).apply(s)
 
     def placeholders(placeholders: Map[String, String])(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.placeholders(placeholders).apply(s)
 
     def placeholderPrefix(placeholderPrefix: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.placeholderPrefix(placeholderPrefix).apply(s)
 
     def placeholderSuffix(placeholderSuffix: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.placeholderSuffix(placeholderSuffix).apply(s)
 
     def sqlMigrationPrefix(sqlMigrationPrefix: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.sqlMigrationPrefix(sqlMigrationPrefix).apply(s)
 
     def undoSqlMigrationPrefix(undoSqlMigrationPrefix: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.undoSqlMigrationPrefix(undoSqlMigrationPrefix).apply(s)
 
     def repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.repeatableSqlMigrationPrefix(repeatableSqlMigrationPrefix).apply(s)
 
     def sqlMigrationSeparator(sqlMigrationSeparator: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.sqlMigrationSeparator(sqlMigrationSeparator).apply(s)
 
     def sqlMigrationSuffixes(sqlMigrationSuffixes: String*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.sqlMigrationSuffixes(sqlMigrationSuffixes: _*).apply(s)
 
     def javaMigrations(javaMigrations: JavaMigration*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.javaMigrations(javaMigrations: _*).apply(s)
 
     def connectRetries(connectRetries: Int)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.connectRetries(connectRetries).apply(s)
 
     def initSql(initSql: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.initSql(initSql).apply(s)
 
     def baselineVersion(baselineVersion: MigrationVersion)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.baselineVersion(baselineVersion).apply(s)
 
     def baselineVersion(baselineVersion: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.baselineVersion(baselineVersion).apply(s)
 
     def baselineDescription(baselineDescription: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.baselineDescription(baselineDescription).apply(s)
 
     def baselineOnMigrate(baselineOnMigrate: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.baselineOnMigrate(baselineOnMigrate).apply(s)
 
     def outOfOrder(outOfOrder: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.outOfOrder(outOfOrder).apply(s)
 
     def callbacks(callbacks: Callback*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.callbacks(callbacks: _*).apply(s)
 
     def callbackClassnames(callbacks: String*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.callbackClassnames(callbacks: _*).apply(s)
 
     def skipDefaultCallbacks(skipDefaultCallbacks: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.skipDefaultCallbacks(skipDefaultCallbacks).apply(s)
 
     def resolvers(resolvers: MigrationResolver*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.resolvers(resolvers: _*).apply(s)
 
     def resolverClassnames(resolvers: String*)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.resolverClassnames(resolvers: _*).apply(s)
 
     def skipDefaultResolvers(skipDefaultResolvers: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.skipDefaultResolvers(skipDefaultResolvers).apply(s)
 
     def stream(stream: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.stream(stream).apply(s)
 
     def batch(batch: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.batch(batch).apply(s)
 
     def oracleSqlplus(oracleSqlplus: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.oracleSqlplus(oracleSqlplus).apply(s)
 
     def licenseKey(licenseKey: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.licenseKey(licenseKey).apply(s)
 
     def configuration(properties: Properties)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.configuration(properties).apply(s)
 
     def configuration(props: Map[String, String])(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.configuration(props).apply(s)
 
     def loadDefaultConfigurationFiles(encoding: String)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.loadDefaultConfigurationFiles(encoding).apply(s)
 
     def envVars()(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.envVars().apply(s)
 
     def resourceProvider(resourceProvider: ResourceProvider)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.resourceProvider(resourceProvider).apply(s)
 
     def javaMigrationClassProvider(javaMigrationClassProvider: ClassProvider[JavaMigration])(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.javaMigrationClassProvider(javaMigrationClassProvider).apply(s)
 
     def createSchemas(createSchemas: Boolean)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       ConfigBuilder.createSchemas(createSchemas).apply(s)
 
     def updateConf(fn: FluentConfiguration => FluentConfiguration)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): ConfigBuilder[F] =
       s.flatMapF((f: FluentConfiguration) => F.delay(fn(f)))
 
     def build(
-               implicit F: Sync[F]
-             ): Config[F] =
+        implicit F: Sync[F]
+    ): Config[F] =
       ConfigBuilder.build(s)
 
     def build(classLoader: ClassLoader)(
-      implicit F: Sync[F]
+        implicit F: Sync[F]
     ): Config[F] =
       ConfigBuilder.build(s, classLoader)
 
@@ -562,7 +562,6 @@ package config {
 
     def build[F[_]: Sync](s: ConfigBuilder[F], classLoader: ClassLoader): Config[F] =
       new Config[F](s.run(new FluentConfiguration(classLoader)).widen[Configuration]) {}
-
 
   }
 
