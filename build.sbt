@@ -5,7 +5,7 @@ val catsEffectV = "3.0.2"
 val flywayV     = "7.8.2"
 
 // Test
-val specs2V                 = "4.12.0"
+val specs2V                 = "4.12.5"
 
 val testContainersScalaV    = "0.39.4" // https://github.com/testcontainers/testcontainers-scala/releases
 
