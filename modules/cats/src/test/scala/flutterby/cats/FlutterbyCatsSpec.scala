@@ -56,8 +56,8 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
       .withTimes(2)
       .withStartupTimeout(Duration.of(60, SECONDS))
   )
-  lazy val driverName         = "org.postgresql.Driver"
-  lazy val jdbcUrl            =
+  lazy val driverName                           = "org.postgresql.Driver"
+  lazy val jdbcUrl                              =
     s"jdbc:postgresql://${container.containerIpAddress}:${container.mappedPort(dbPort)}/$dbName"
 
   lazy val flutterby: IO[Flutterby[IO]] =
@@ -66,10 +66,10 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
       .dataSource(jdbcUrl, dbUserName, dbPassword)
       .load
 
-  lazy val dbClean: IO[Unit] = for
-    fb <- flutterby
-    _  <- fb.clean()
-  yield ()
+  lazy val dbClean: IO[Unit] =
+    for fb <- flutterby
+    _      <- fb.clean()
+    yield ()
 
   override protected def before: Any =
     dbClean.unsafeRunSync()
@@ -77,8 +77,8 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
   override protected def after: Any = {}
 
   "happy path" in {
-    val result: IO[MatchResult[Any]] = for
-      fb                                <- flutterby
+    val result: IO[MatchResult[Any]] =
+      for fb                            <- flutterby
       validateResultBeforeMigrate       <- fb.validate().attempt
       infoBeforeMigrate                 <- fb.info()
       _                                 <- fb.baseline()
@@ -86,26 +86,26 @@ class FlutterbyCatsSpec extends Specification with ForAllTestContainer with Befo
       _                                 <- fb.baseline()
       _                                 <- fb.validate()
       infoAfterMigrate                  <- fb.info()
-    yield {
-      validateResultBeforeMigrate.leftMap(_.getMessage) aka "validateResultBeforeMigrate" must beLeft.which {
-        case msg: String =>
-          msg must contain("Validate failed:")
-          msg must contain("Detected resolved migration not applied to database: 1")
-          msg must contain("Detected resolved migration not applied to database: 2")
+      yield {
+        validateResultBeforeMigrate.leftMap(_.getMessage) aka "validateResultBeforeMigrate" must beLeft.which {
+          case msg: String =>
+            msg must contain("Validate failed:")
+            msg must contain("Detected resolved migration not applied to database: 1")
+            msg must contain("Detected resolved migration not applied to database: 2")
+        }
+
+        infoBeforeMigrate.all aka "allMigrationsBeforeMigrate" must haveSize(2)
+        infoBeforeMigrate.pending aka "pendingMigrationsBeforeMigrate" must haveSize(2)
+        infoBeforeMigrate.current aka "currentMigrationBeforeMigrate" must beNone
+        infoBeforeMigrate.applied aka "appliedMigrationsBeforeMigrate" must haveSize(0)
+
+        successfullyAppliedMigrationCount aka "successfullyAppliedMigrationCount" must_== 1
+
+        infoAfterMigrate.all aka "allMigrationsAfterMigrate" must haveSize(2)
+        infoAfterMigrate.pending aka "pendingMigrationsAfterMigrate" must haveSize(0)
+        infoAfterMigrate.current.flatMap(_.version.version) aka "currentMigrationAfterMigrate" must beSome("2")
+        infoAfterMigrate.applied aka "appliedMigrationsAfterMigrate" must haveSize(2)
       }
-
-      infoBeforeMigrate.all aka "allMigrationsBeforeMigrate" must haveSize(2)
-      infoBeforeMigrate.pending aka "pendingMigrationsBeforeMigrate" must haveSize(2)
-      infoBeforeMigrate.current aka "currentMigrationBeforeMigrate" must beNone
-      infoBeforeMigrate.applied aka "appliedMigrationsBeforeMigrate" must haveSize(0)
-
-      successfullyAppliedMigrationCount aka "successfullyAppliedMigrationCount" must_== 1
-
-      infoAfterMigrate.all aka "allMigrationsAfterMigrate" must haveSize(2)
-      infoAfterMigrate.pending aka "pendingMigrationsAfterMigrate" must haveSize(0)
-      infoAfterMigrate.current.flatMap(_.version.version) aka "currentMigrationAfterMigrate" must beSome("2")
-      infoAfterMigrate.applied aka "appliedMigrationsAfterMigrate" must haveSize(2)
-    }
 
     result.unsafeRunSync()
   }

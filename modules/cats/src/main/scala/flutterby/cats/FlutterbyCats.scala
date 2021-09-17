@@ -11,9 +11,8 @@ object FlutterbyCats {
   def fromConfig[F[_]](config: Config[F])(
       implicit F: Sync[F]
   ): F[Flutterby[F]] =
-    for
-      c      <- config.config
-      flyway <- F.blocking(Flyway.configure(c.getClassLoader).configuration(c).load())
+    for c  <- config.config
+    flyway <- F.blocking(Flyway.configure(c.getClassLoader).configuration(c).load())
     yield new Flutterby[F] {
       override def baseline(): F[Unit]         = F.blocking(flyway.baseline()).void              // TODO: support new model instead of void
       override def migrate(): F[Int]           = F.blocking(flyway.migrate().migrationsExecuted) // TODO: support new model
