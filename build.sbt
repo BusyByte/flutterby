@@ -2,30 +2,29 @@ val scalaV = "3.0.0-RC1"
 
 val catsEffectV = "3.0.2"
 
-val flywayV     = "7.8.2"
+val flywayV = "7.8.2"
 
 // Test
-val specs2V                 = "4.12.0"
+val specs2V = "4.12.0"
 
-val testContainersScalaV    = "0.39.4" // https://github.com/testcontainers/testcontainers-scala/releases
+val testContainersScalaV = "0.39.4" // https://github.com/testcontainers/testcontainers-scala/releases
 
 val testContainersPostgresV = "1.15.3" // https://github.com/testcontainers/testcontainers-java/releases
 
-val postgresV               = "42.2.20"
+val postgresV = "42.2.20"
 
-
-lazy val `flutterby` =
+lazy val `flutterby`       =
   (project in file("."))
     .aggregate(`flutterby-core`, `flutterby-cats`)
     .settings(noPublishSettings)
     .settings(commonSettings, releaseSettings)
 
-lazy val `flutterby-core` = project
+lazy val `flutterby-core`  = project
   .in(file("modules/core"))
   .settings(name := "flutterby-core")
   .settings(commonSettings, releaseSettings)
 
-lazy val `flutterby-cats` = project
+lazy val `flutterby-cats`  = project
   .in(file("modules/cats"))
   .dependsOn(`flutterby-core`)
   .settings(name := "flutterby-cats")
@@ -39,9 +38,9 @@ lazy val `flutterby-cats` = project
     )
   )
 
-lazy val commonSettings = Seq(
+lazy val commonSettings    = Seq(
   organization := "dev.shawngarner",
-  scalaVersion := scalaV ,
+  scalaVersion := scalaV,
 //  scalacOptions ++= Seq(
 //    "-rewrite",
 //    "-new-syntax",
@@ -49,29 +48,29 @@ lazy val commonSettings = Seq(
 //  ),
   libraryDependencies ++= Seq(
     "org.flywaydb" % "flyway-core"       % flywayV,
-    ("org.specs2"  %% "specs2-core"       % specs2V % Test).cross(CrossVersion.for3Use2_13),
-    ("org.specs2"  %% "specs2-scalacheck" % specs2V % Test).cross(CrossVersion.for3Use2_13)
+    ("org.specs2" %% "specs2-core"       % specs2V % Test).cross(CrossVersion.for3Use2_13),
+    ("org.specs2" %% "specs2-scalacheck" % specs2V % Test).cross(CrossVersion.for3Use2_13)
   )
 )
 
-lazy val contributors = Seq(
+lazy val contributors      = Seq(
   "BusyByte" -> "Shawn Garner"
 )
 
-lazy val releaseSettings = Seq(
+lazy val releaseSettings   = Seq(
   Test / publishArtifact := false,
-  scmInfo := Some(
+  scmInfo                := Some(
     ScmInfo(
       url("https://github.com/BusyByte/flutterby"),
       "git@github.com:BusyByte/flutterby.git"
     )
   ),
-  homepage := Some(url("https://github.com/BusyByte/flutterby")),
-  licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  pomIncludeRepository := { _ =>
+  homepage               := Some(url("https://github.com/BusyByte/flutterby")),
+  licenses               := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+  pomIncludeRepository   := { _ =>
     false
   },
-  pomExtra := {
+  pomExtra               := {
     <developers>
       {
       for ((username, name) <- contributors)
@@ -87,7 +86,7 @@ lazy val releaseSettings = Seq(
 
 lazy val noPublishSettings =
   Seq(
-    publish := {},
-    publishLocal := {},
+    publish         := {},
+    publishLocal    := {},
     publishArtifact := false
   )

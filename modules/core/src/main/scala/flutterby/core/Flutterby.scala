@@ -66,7 +66,7 @@ sealed abstract class MigrationInfo(private val m: FlywayMigrationInfo) extends 
   def installedRank: Option[Int]
   def executionTime: Option[FiniteDuration]
 }
-object MigrationInfo {
+object MigrationInfo    {
   import scala.concurrent.duration._
   def fromFlyway(m: FlywayMigrationInfo): MigrationInfo =
     new MigrationInfo(m) {
