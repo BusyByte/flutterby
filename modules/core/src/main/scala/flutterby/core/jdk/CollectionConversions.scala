@@ -2,7 +2,8 @@ package flutterby.core.jdk
 
 import java.util
 
-/** @author Shawn Garner
+/** @author
+  *   Shawn Garner
   */
 object CollectionConversions {
 
