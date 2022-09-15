@@ -6,7 +6,7 @@ FP Scala Wrapper for Flyway
 
 ## Status 
 
-abandoned
+abandoned due to lack of interest
 
 
 ## Installation
