@@ -2,11 +2,12 @@
 
 # flutterby
 
+FP Scala Wrapper for Flyway
+
 ## Status 
 
 abandoned
 
-FP Scala Wrapper for Flyway
 
 ## Installation
 
